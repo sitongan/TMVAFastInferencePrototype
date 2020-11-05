@@ -4,7 +4,7 @@
 #include "TMVA/RTensor.hxx"
 
 #include "SOFIE_common.hxx"
-//#include "ROperator.hxx"
+#include "ROperator.hxx"
 
 #include <vector>
 #include <unordered_map>
@@ -19,7 +19,7 @@ class RModel{
 private:
 
    std::unordered_map<std::string, TensorInfo> fInputTensorInfos;
-   //std::vector<std::unique_ptr<ROperator>> fOperators;
+   std::vector<std::unique_ptr<ROperator>> fOperators;
    std::unordered_map<std::string, InitializedTensor> fInitializedTensors;
    bool fAllTensorInitialized = false;
 
@@ -41,16 +41,16 @@ public:
       fInputTensorInfos[input_name] = inputInfo;
    }
 
-/*
-   void addOperator(std::unique_ptr<ROperator> op, int order_execution = -1){
+
+   void addOperator(std::unique_ptr<ROperator> op, size_t order_execution = -1){
       if (order_execution >= 0) {
-         fOperators.insert(order_execution, op);
+         fOperators.insert(fOperators.begin() + order_execution, std::move(op));
       }else{
-         fOperators.push_back(op);
+         fOperators.push_back(std::move(op));
       }
 
    }
-   */
+
 
    void addInitializedTensors(std::string tensor_name, ETensorType type, std::vector<std::size_t> shape, void* data){
       //a view only

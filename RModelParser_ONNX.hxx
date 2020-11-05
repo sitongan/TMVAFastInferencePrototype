@@ -15,29 +15,30 @@ namespace TMVA{
 namespace Experimental{
 namespace SOFIE{
 
-/*
-namespace INTERNAL{
-unique_ptr<ROperator> make_ROperator_Gemm(const onnx::NodeProto& nodeproto, RModel& this_graph);
-unique_ptr<ROperator> make_ROperator_Transpose(const onnx::NodeProto& nodeproto, RModel& this_graph);
-unique_ptr<ROperator> make_ROperator_Relu(const onnx::NodeProto& nodeproto, RModel& this_graph);
 
-using factoryMethodMap = std::unordered_map<std::string, unique_ptr<ROperator> (*)(const onnx::NodeProto&, RModel&)>;
+namespace INTERNAL{
+//unique_ptr<ROperator> make_ROperator_Gemm(const onnx::NodeProto& nodeproto, RModel& this_graph);
+std::unique_ptr<ROperator> make_ROperator_Transpose(const onnx::NodeProto& nodeproto, const onnx::GraphProto& graphproto);
+//unique_ptr<ROperator> make_ROperator_Relu(const onnx::NodeProto& nodeproto, RModel& this_graph);
+
+using factoryMethodMap = std::unordered_map<std::string, std::unique_ptr<ROperator> (*)(const onnx::NodeProto&, const onnx::GraphProto&)>;
 const factoryMethodMap mapOptypeOperator = {
-      {"Gemm", &make_ROperator_Gemm}//,
-      //{"Transpose", &make_ROperator_Transpose},
+      //{"Gemm", &make_ROperator_Gemm}//,
+      //{"Transpose", &make_ROperator_Transpose}//,
       //{"Relu", &make_ROperator_Relu}
    };
 }
 
-ROperator* make_ROperator(const onnx::NodeProto& nodeproto, const onnx::ModelProto& modelproto, const RModel& this_model){
-auto find = INTERNAL::mapOptypeOperator.find(nodeproto.op_type());
-   if (find == INTERNAL::mapOptypeOperator.end()){
-      throw std::runtime_error("TMVA::SOFIE - Operator type " + nodeproto.op_type() + " is not yet supported");
-   }else{
-      return (find->second)(nodeproto, modelproto, (*this));
-   }
+std::unique_ptr<ROperator> make_ROperator(size_t idx, const onnx::GraphProto& graphproto){
+   const auto& nodeproto = graphproto.node(idx);
+   auto find = INTERNAL::mapOptypeOperator.find(nodeproto.op_type());
+      if (find == INTERNAL::mapOptypeOperator.end()){
+         throw std::runtime_error("TMVA::SOFIE - Operator type " + nodeproto.op_type() + " is not yet supported");
+      }else{
+         return (find->second)(nodeproto, graphproto);
+      }
 }
-*/
+
 
 class RModelParser_ONNX{
 public:
@@ -98,6 +99,12 @@ public:
          rmodel.addInputTensorInfo(input_name, type, fShape);
 
       }
+
+      for (int i=0; i < graph.node_size(); i++){
+         rmodel.addOperator(make_ROperator(i, graph));
+      }
+
+
 
       return rmodel;
 
