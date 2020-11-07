@@ -1,6 +1,8 @@
 #ifndef TMVA_SOFIE_SOFIE_COMMON
 #define TMVA_SOFIE_SOFIE_COMMON
 
+#include "TMVA/RTensor.hxx"
+
 #include <type_traits>
 #include <cstdint>
 #include <string>
@@ -20,18 +22,14 @@ struct Dim{
    std::string param;
 };
 
-std::vector<Dim> ConvertShapeToDim(std::vector<size_t> shape){
-   std::vector<Dim> fshape(shape.size());
-   for (int i =0; i < shape.size(); i++){
-      fshape[i].dim = shape[i];
-   }
-   return fshape;
-}
+std::vector<Dim> ConvertShapeToDim(std::vector<size_t> shape);
 
 struct TensorInfo{
    ETensorType type;
    std::vector<Dim> shape;
 };
+
+std::size_t ConvertShapeToLength(std::vector<size_t> shape);
 
 struct InitializedTensor{
    ETensorType type;
@@ -56,6 +54,7 @@ ETensorType GetTemplatedType(T obj){
    if (std::is_same<T, uint64_t>::value) return ETensorType::UINT64;
    //complex 64, 28, bfloat 16 unimplemented
 }
+
 
 }//SOFIE
 }//Experimental

@@ -2,6 +2,7 @@
 #define TMVA_SOFIE_ROPERATOR
 
 #include <vector>
+#include <memory>
 
 #include "SOFIE_common.hxx"
 
@@ -18,6 +19,8 @@ public:
    virtual void Forward_reference() = 0;
    virtual void Forward_blas() = 0;
    virtual ~ROperator(){}
+
+   typedef std::int64_t int_t; 
 };
 
 

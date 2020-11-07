@@ -18,27 +18,19 @@ namespace SOFIE{
 
 namespace INTERNAL{
 //unique_ptr<ROperator> make_ROperator_Gemm(const onnx::NodeProto& nodeproto, RModel& this_graph);
-std::unique_ptr<ROperator> make_ROperator_Transpose(const onnx::NodeProto& nodeproto, const onnx::GraphProto& graphproto);
+ROperator* make_ROperator_Transpose(const onnx::NodeProto& nodeproto, const onnx::GraphProto& graphproto, const std::unordered_map<std::string, size_t>& tensorname2idx);
 //unique_ptr<ROperator> make_ROperator_Relu(const onnx::NodeProto& nodeproto, RModel& this_graph);
 
-using factoryMethodMap = std::unordered_map<std::string, std::unique_ptr<ROperator> (*)(const onnx::NodeProto&, const onnx::GraphProto&)>;
+using factoryMethodMap = std::unordered_map<std::string, ROperator* (*)(const onnx::NodeProto&, const onnx::GraphProto&, const std::unordered_map<std::string, size_t>&)>;
 const factoryMethodMap mapOptypeOperator = {
       //{"Gemm", &make_ROperator_Gemm}//,
       //{"Transpose", &make_ROperator_Transpose}//,
       //{"Relu", &make_ROperator_Relu}
    };
-}
 
-std::unique_ptr<ROperator> make_ROperator(size_t idx, const onnx::GraphProto& graphproto){
-   const auto& nodeproto = graphproto.node(idx);
-   auto find = INTERNAL::mapOptypeOperator.find(nodeproto.op_type());
-      if (find == INTERNAL::mapOptypeOperator.end()){
-         throw std::runtime_error("TMVA::SOFIE - Operator type " + nodeproto.op_type() + " is not yet supported");
-      }else{
-         return (find->second)(nodeproto, graphproto);
-      }
-}
 
+ROperator* make_ROperator(size_t idx, const onnx::GraphProto& graphproto, const std::unordered_map<std::string, size_t>& tensorname2idx);
+}
 
 class RModelParser_ONNX{
 public:
@@ -64,8 +56,9 @@ public:
          initializer_names.insert(graph.initializer(i).name());
       }
 
+      std::unordered_map<std::string, size_t> tensorname2idx;
       for (int i=0; i < graph.input_size(); i++){
-
+         tensorname2idx.emplace(graph.input(i).name(), i);
          if (initializer_names.find(graph.input(i).name()) != initializer_names.end())  continue;
 
          //input datanode is not a weight node (has no initializer)
@@ -100,8 +93,39 @@ public:
 
       }
 
+      for (int i=0; i < graph.initializer_size(); i++){
+         onnx::TensorProto* tensorproto = const_cast<onnx::TensorProto*>(&graph.initializer(i));
+         std::vector<std::size_t> fShape;
+         std::size_t fLength = 1;
+         for (int i = 0; i < tensorproto->dims_size(); i++){
+            fShape.push_back(tensorproto->dims(i));
+            fLength *= tensorproto->dims(i);
+         }
+
+         std::string input_name = graph.initializer(i).name();
+
+         switch(static_cast<ETensorType>(graph.initializer(i).data_type())){
+            case ETensorType::FLOAT : {
+               void* data = malloc (fLength * sizeof(float));
+
+               if (tensorproto->raw_data().empty() == false){
+                  auto raw_data_ptr = reinterpret_cast<float*>(const_cast<char*>(tensorproto->raw_data().c_str()));
+                  std::memcpy(data, raw_data_ptr, fLength * sizeof(float));
+               }else{
+                  tensorproto->mutable_float_data()->ExtractSubrange(0, tensorproto->float_data_size(), static_cast<float*>(data));
+               }
+
+               //rmodel.addInitializedTensors(input_name, ETensorType::FLOAT, fShape, data);
+               break;
+            }
+            default: throw std::runtime_error("Data type in weight tensor " + graph.initializer(i).name() + " not supported!\n");
+         }
+      }
+
+
+
       for (int i=0; i < graph.node_size(); i++){
-         rmodel.addOperator(make_ROperator(i, graph));
+         //rmodel.addOperator(std::move(std::unique_ptr<ROperator>(make_ROperator(i, graph, tensorname2idx))));
       }
 
 
