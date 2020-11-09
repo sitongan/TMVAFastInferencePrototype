@@ -1,14 +1,14 @@
 #ifndef TMVA_SOFIE_RMODEL
 #define TMVA_SOFIE_RMODEL
 
-
+#include <vector>
+#include <unordered_map>
+#include <iostream>
+#include <memory>
 
 #include "SOFIE_common.hxx"
 #include "ROperator.hxx"
 
-#include <vector>
-#include <unordered_map>
-#include <iostream>
 
 namespace TMVA{
 namespace Experimental{
@@ -19,13 +19,21 @@ class RModel{
 private:
 
    std::unordered_map<std::string, TensorInfo> fInputTensorInfos;
-   //std::vector<std::unique_ptr<ROperator>> fOperators;
+   std::vector<std::unique_ptr<ROperator>> fOperators;
+
    std::unordered_map<std::string, InitializedTensor> fInitializedTensors;
    bool fAllTensorInitialized = false;
 
-
-
 public:
+
+   RModel(RModel&& other){
+      fInputTensorInfos = std::move(other.fInputTensorInfos);
+      fOperators = std::move(other.fOperators);
+      fInitializedTensors = std::move(other.fInitializedTensors);
+      fAllTensorInitialized = other.fAllTensorInitialized;
+   }
+
+   RModel(){};
 
    void addInputTensorInfo(std::string input_name, ETensorType type, std::vector<Dim> shape){
       if (fInputTensorInfos.find(input_name) != fInputTensorInfos.end()){
@@ -43,8 +51,9 @@ public:
       fInputTensorInfos[input_name] = inputInfo;
    }
 
-/*
-   void addOperator(std::unique_ptr<ROperator>&& op, size_t order_execution = -1){
+
+   void addOperator(std::unique_ptr<ROperator> op, size_t order_execution = -1){
+
       if (order_execution >= 0) {
          fOperators.insert(fOperators.begin() + order_execution, std::move(op));
       }else{
@@ -52,7 +61,7 @@ public:
       }
 
    }
-*/
+
 
    void addInitializedTensors(std::string tensor_name, ETensorType type, std::vector<std::size_t> shape, void* data){
       //NB: own data
@@ -80,12 +89,7 @@ public:
       std::cout << "Model requires following inputs:\n";
       for (auto& inputInfo: fInputTensorInfos){
          std::cout << "Tensor name: " << inputInfo.first << "\t";
-         switch(inputInfo.second.type){
-            case ETensorType::FLOAT : {
-               std::cout << "type: float\t";
-               break;
-            }
-         }
+         std::cout << "type: " << ConvertTypeToString(inputInfo.second.type) << "\t";
          std::cout << "shape: [";
          for (int i = 0; i < inputInfo.second.shape.size(); i++){
             if (inputInfo.second.shape[i].isParam){
@@ -103,12 +107,7 @@ public:
       std::cout << "Model initialized the following tensors:\n";
       for (auto& it: fInitializedTensors){
          std::cout << "Tensor name: " << it.first << "\t";
-         switch(it.second.type){
-            case ETensorType::FLOAT : {
-               std::cout << "type: float\t";
-               break;
-            }
-         }
+         std::cout << "type: " << ConvertTypeToString(it.second.type) << "\t";
          std::cout << "shape: [";
          for (int i = 0; i < it.second.shape.size(); i++){
             std::cout << it.second.shape[i];

@@ -1,11 +1,12 @@
 #ifndef TMVA_SOFIE_SOFIE_COMMON
 #define TMVA_SOFIE_SOFIE_COMMON
 
-#include "TMVA/RTensor.hxx"
+//#include "TMVA/RTensor.hxx"
 
 #include <type_traits>
 #include <cstdint>
 #include <string>
+#include <vector>
 
 namespace TMVA{
 namespace Experimental{
@@ -16,6 +17,8 @@ enum class ETensorType{
     FLOAT16 = 10, DOUBLE = 11, UINT32 = 12, UINT64 = 13, COMPLEX64 = 14, COMPLEX28 = 15, BFLOAT16 = 16
 };
 
+std::string ConvertTypeToString(ETensorType type);
+
 struct Dim{
    bool isParam = false;
    size_t dim;
@@ -23,6 +26,7 @@ struct Dim{
 };
 
 std::vector<Dim> ConvertShapeToDim(std::vector<size_t> shape);
+
 
 struct TensorInfo{
    ETensorType type;

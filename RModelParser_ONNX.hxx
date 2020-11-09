@@ -34,7 +34,7 @@ ROperator* make_ROperator(size_t idx, const onnx::GraphProto& graphproto, const 
 
 class RModelParser_ONNX{
 public:
-   RModel Parse(std::string filename){
+   RModel&& Parse(std::string filename){
       auto extension = filename.substr(filename.length() - 4);
       std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 
@@ -125,12 +125,12 @@ public:
 
 
       for (int i=0; i < graph.node_size(); i++){
-         //rmodel.addOperator(std::move(std::unique_ptr<ROperator>(make_ROperator(i, graph, tensorname2idx))));
+         rmodel.addOperator(std::move(std::unique_ptr<ROperator>(INTERNAL::make_ROperator(i, graph, tensorname2idx))));
       }
 
 
 
-      return rmodel;
+      return std::move(rmodel);
 
    }
 

@@ -19,6 +19,20 @@ std::size_t ConvertShapeToLength(std::vector<size_t> shape){
    return fLength;
 }
 
+std::string ConvertTypeToString(ETensorType type){
+   switch(type){
+      case ETensorType::FLOAT : {
+         return "float";
+      }
+      default:{
+         return "other";
+      }
+   }
+
+
+
+
+}
 
 }//SOFIE
 }//Experimental

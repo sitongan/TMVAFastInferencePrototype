@@ -20,7 +20,9 @@ public:
    virtual void Forward_blas() = 0;
    virtual ~ROperator(){}
 
-   typedef std::int64_t int_t; 
+   typedef std::int64_t int_t;
+
+
 };
 
 

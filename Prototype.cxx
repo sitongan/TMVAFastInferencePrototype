@@ -7,4 +7,5 @@ int main(){
    TMVA::Experimental::SOFIE::RModel model = parser.Parse("LinearNN.onnx");
    model.PrintRequiredInputTensors();
    model.PrintInitializedTensors();
+
 }
