@@ -27,11 +27,24 @@ private:
 public:
 
    RModel(RModel&& other){
+      fInputTensorInfos = other.fInputTensorInfos;
       fInputTensorInfos = std::move(other.fInputTensorInfos);
       fOperators = std::move(other.fOperators);
       fInitializedTensors = std::move(other.fInitializedTensors);
       fAllTensorInitialized = other.fAllTensorInitialized;
    }
+
+   RModel& operator=(RModel&& other){
+      fInputTensorInfos = std::move(other.fInputTensorInfos);
+      fOperators = std::move(other.fOperators);
+      fInitializedTensors = std::move(other.fInitializedTensors);
+      fAllTensorInitialized = other.fAllTensorInitialized;
+      return *this;
+   }
+
+   //disallow copy
+   RModel(const RModel& other) = delete;
+   RModel& operator=(const RModel& other) = delete;
 
    RModel(){};
 

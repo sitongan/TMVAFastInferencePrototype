@@ -18,7 +18,7 @@ namespace SOFIE{
 
 namespace INTERNAL{
 //unique_ptr<ROperator> make_ROperator_Gemm(const onnx::NodeProto& nodeproto, RModel& this_graph);
-ROperator* make_ROperator_Transpose(const onnx::NodeProto& nodeproto, const onnx::GraphProto& graphproto, const std::unordered_map<std::string, size_t>& tensorname2idx);
+//ROperator* make_ROperator_Transpose(const onnx::NodeProto& nodeproto, const onnx::GraphProto& graphproto, const std::unordered_map<std::string, size_t>& tensorname2idx);
 //unique_ptr<ROperator> make_ROperator_Relu(const onnx::NodeProto& nodeproto, RModel& this_graph);
 
 using factoryMethodMap = std::unordered_map<std::string, ROperator* (*)(const onnx::NodeProto&, const onnx::GraphProto&, const std::unordered_map<std::string, size_t>&)>;
@@ -34,7 +34,7 @@ ROperator* make_ROperator(size_t idx, const onnx::GraphProto& graphproto, const 
 
 class RModelParser_ONNX{
 public:
-   RModel&& Parse(std::string filename){
+   RModel Parse(std::string filename){
       auto extension = filename.substr(filename.length() - 4);
       std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 
@@ -123,14 +123,14 @@ public:
       }
 
 
-
+/*
       for (int i=0; i < graph.node_size(); i++){
          rmodel.addOperator(std::move(std::unique_ptr<ROperator>(INTERNAL::make_ROperator(i, graph, tensorname2idx))));
       }
+*/
 
 
-
-      return std::move(rmodel);
+      return rmodel;
 
    }
 

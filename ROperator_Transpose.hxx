@@ -4,25 +4,20 @@
 
 #include "SOFIE_common.hxx"
 #include "ROperator.hxx"
-#include "onnx.pb.h"
 
 namespace TMVA{
 namespace Experimental{
 namespace SOFIE{
 
-namespace BLAS{
-extern "C" void sgemm_(const char * transa, const char * transb, const int * m, const int * n, const int * k,
-                       const float * alpha, const float * A, const int * lda, const float * B, const int * ldb,
-                       const float * beta, float * C, const int * ldc);
-}//BLAS
 
 
-template <typename V, typename C = RTensor<V>>
+
+template <typename V, typename C = tensor_t<V>>
 class ROperator_Transpose final : public ROperator
 {
 
 private:
-   std::vector<int_t> attr_perm;
+   std::vector<int> attr_perm;
    std::unique_ptr<C> data;
    std::unique_ptr<C> transposed;
 

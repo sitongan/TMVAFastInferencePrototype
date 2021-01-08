@@ -1,7 +1,7 @@
 #ifndef TMVA_SOFIE_SOFIE_COMMON
 #define TMVA_SOFIE_SOFIE_COMMON
 
-//#include "TMVA/RTensor.hxx"
+#include "TMVA/RTensor.hxx"
 
 #include <type_traits>
 #include <cstdint>
@@ -11,6 +11,8 @@
 namespace TMVA{
 namespace Experimental{
 namespace SOFIE{
+
+//typedef RTensor tensor_t;
 
 enum class ETensorType{
    UNDEFINED = 0, FLOAT = 1, UNINT8 = 2, INT8 = 3, UINT16 = 4, INT16 = 5, INT32 = 6, INT64 = 7, STRING = 8, BOOL = 9, //order sensitive
@@ -58,6 +60,13 @@ ETensorType GetTemplatedType(T obj){
    if (std::is_same<T, uint64_t>::value) return ETensorType::UINT64;
    //complex 64, 28, bfloat 16 unimplemented
 }
+
+
+namespace BLAS{
+extern "C" void sgemm_(const char * transa, const char * transb, const int * m, const int * n, const int * k,
+                       const float * alpha, const float * A, const int * lda, const float * B, const int * ldb,
+                       const float * beta, float * C, const int * ldc);
+}//BLAS
 
 
 }//SOFIE
