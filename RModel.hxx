@@ -26,6 +26,7 @@ private:
 
 public:
 
+   //explicit move ctor/assn
    RModel(RModel&& other){
       fInputTensorInfos = other.fInputTensorInfos;
       fInputTensorInfos = std::move(other.fInputTensorInfos);
