@@ -26,7 +26,7 @@ private:
 
 public:
 
-   //explicit move ctor/assn 
+   //explicit move ctor/assn
    RModel(RModel&& other){
       fInputTensorInfos = other.fInputTensorInfos;
       fInputTensorInfos = std::move(other.fInputTensorInfos);
@@ -77,7 +77,7 @@ public:
    }
 
 
-   void addInitializedTensors(std::string tensor_name, ETensorType type, std::vector<std::size_t> shape, void* data){
+   void addInitializedTensors(std::string tensor_name, ETensorType type, std::vector<std::size_t> shape, std::shared_ptr<void> data){
       //NB: own data
       if (fInitializedTensors.find(tensor_name) != fInitializedTensors.end()){
          throw std::runtime_error("TMVA-SOFIE: initialized tensor with name " + tensor_name + " already exists \n");
@@ -132,9 +132,11 @@ public:
    }
 
    ~RModel(){
+      /*
       for (auto& i: fInitializedTensors){
          free(i.second.data);
       }
+      */
    }
 
 };

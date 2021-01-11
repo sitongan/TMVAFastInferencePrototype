@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace TMVA{
 namespace Experimental{
@@ -40,7 +41,8 @@ std::size_t ConvertShapeToLength(std::vector<size_t> shape);
 struct InitializedTensor{
    ETensorType type;
    std::vector<std::size_t> shape;
-   void* data;
+   std::shared_ptr<void> data;
+   //void* data;
 };
 
 template <typename T>

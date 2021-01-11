@@ -9,6 +9,7 @@
 
 #include <string>
 #include <fstream>
+#include <memory>
 
 
 namespace TMVA{
@@ -106,13 +107,14 @@ public:
 
          switch(static_cast<ETensorType>(graph.initializer(i).data_type())){
             case ETensorType::FLOAT : {
-               void* data = malloc (fLength * sizeof(float));
+               //void* data = malloc (fLength * sizeof(float));
+               std::shared_ptr<void> data(malloc(fLength * sizeof(float)), free);
 
                if (tensorproto->raw_data().empty() == false){
                   auto raw_data_ptr = reinterpret_cast<float*>(const_cast<char*>(tensorproto->raw_data().c_str()));
-                  std::memcpy(data, raw_data_ptr, fLength * sizeof(float));
+                  std::memcpy(data.get(), raw_data_ptr, fLength * sizeof(float));
                }else{
-                  tensorproto->mutable_float_data()->ExtractSubrange(0, tensorproto->float_data_size(), static_cast<float*>(data));
+                  tensorproto->mutable_float_data()->ExtractSubrange(0, tensorproto->float_data_size(), static_cast<float*>(data.get()));
                }
 
                rmodel.addInitializedTensors(input_name, ETensorType::FLOAT, fShape, data);
