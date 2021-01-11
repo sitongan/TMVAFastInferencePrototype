@@ -120,7 +120,7 @@ public:
    void PrintInitializedTensors(){
       std::cout << "Model initialized the following tensors:\n";
       for (auto& it: fInitializedTensors){
-         std::cout << "Tensor name: " << it.first << "\t";
+         std::cout << "Tensor name: \"" << it.first << "\"\t";
          std::cout << "type: " << ConvertTypeToString(it.second.type) << "\t";
          std::cout << "shape: [";
          for (int i = 0; i < it.second.shape.size(); i++){
@@ -129,6 +129,45 @@ public:
          }
          std::cout << "]" << std::endl;
       }
+   }
+
+   void HeadInitializedTensors(std::string name, int n_print = 50){
+      auto it = fInitializedTensors.find(name);
+      if (it == fInitializedTensors.end()){
+         std::cout << "Tensor " << name << " not found in model's intiialized tensor list" << std::endl;
+         return;
+      }
+
+      std::cout << "Tensor name: " << it->first << "\t";
+      std::cout << "type: " << ConvertTypeToString(it->second.type) << "\t";
+      std::size_t length =1;
+      std::cout << "shape: [";
+      for (int i = 0; i < it->second.shape.size(); i++){
+         std::cout << it->second.shape[i];
+         length *= it->second.shape[i];
+         if (i < it->second.shape.size() - 1) std::cout << ",";
+      }
+      std::cout << "]" << std::endl;
+      bool ellipsis = true;
+      if (n_print > length){
+         n_print = length;
+         ellipsis = false;
+      }
+
+      std::cout << "data: [" << std::endl;
+      switch(it->second.type){
+         case ETensorType::FLOAT : {
+            auto converted_data = std::static_pointer_cast<float>(it->second.data).get();
+            for (int i =0; i < n_print; i++){
+               std::cout << converted_data[i];
+               if (i < n_print - 1) std::cout << " ,";
+            }
+            break;
+         }
+      }
+      if (ellipsis) std::cout << ", ...";
+      std::cout << "]" << std::endl;
+
    }
 
    ~RModel(){

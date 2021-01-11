@@ -8,5 +8,6 @@ int main(){
    TMVA::Experimental::SOFIE::RModel model2 = std::move(model);
    model2.PrintRequiredInputTensors();
    model2.PrintInitializedTensors();
-
+   model2.HeadInitializedTensors("18.bias");
+   model2.HeadInitializedTensors("0.weight");
 }
