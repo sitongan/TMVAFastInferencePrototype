@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <iostream>
 #include <memory>
+#include <ctime>
 
 #include "SOFIE_common.hxx"
 #include "ROperator.hxx"
@@ -24,7 +25,10 @@ private:
    std::unordered_map<std::string, InitializedTensor> fInitializedTensors;
    bool fAllTensorInitialized = false;
 
-   std::string fName;
+   std::string fName="UninitializedModel";
+   std::string fFileName; //file name of original model file for identification
+   std::string fParseTime; //UTC date and time string at parsing
+
 
    std::string fGC; //generated code
 
@@ -38,6 +42,8 @@ public:
       fInitializedTensors = std::move(other.fInitializedTensors);
       fAllTensorInitialized = other.fAllTensorInitialized;
       fName = other.fName;
+      fFileName = other.fFileName;
+      fParseTime = other.fParseTime;
    }
 
    RModel& operator=(RModel&& other){
@@ -46,6 +52,8 @@ public:
       fInitializedTensors = std::move(other.fInitializedTensors);
       fAllTensorInitialized = other.fAllTensorInitialized;
       fName = other.fName;
+      fFileName = other.fFileName;
+      fParseTime = other.fParseTime;
       return *this;
    }
 
@@ -54,7 +62,11 @@ public:
    RModel& operator=(const RModel& other) = delete;
 
    RModel(){}
-   RModel(std::string name): fName (name) {}
+   RModel(std::string name, std::string parsedtime): fFileName (name), fParseTime(parsedtime) {
+      fName = fFileName.substr(0, fFileName.rfind("."));
+   }
+
+
 
    void AddInputTensorInfo(std::string input_name, ETensorType type, std::vector<Dim> shape){
       if (fInputTensorInfos.find(input_name) != fInputTensorInfos.end()){
@@ -94,6 +106,7 @@ public:
    }
 
    void Generate(){
+      fGC += ("//Code generated automatically by TMVA for Inference of Model file [" + fFileName + "] at [" + fParseTime.substr(0, fParseTime.length()-1) +"] \n");
       fGC += ("namespace TMVA_SOFIE_" + fName + "{\n");
 
 

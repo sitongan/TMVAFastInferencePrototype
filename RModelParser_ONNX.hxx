@@ -10,6 +10,7 @@
 #include <string>
 #include <fstream>
 #include <memory>
+#include <ctime>
 
 
 namespace TMVA{
@@ -45,17 +46,22 @@ public:
       size_t i = filename.rfind(sep, filename.length());
       std::string modelname;
       if (i != std::string::npos){
-         modelname = (filename.substr(i+1, filename.length() - i));
-      }else{
-         modelname = filename;
+         filename = (filename.substr(i+1, filename.length() - i));
       }
-      modelname = modelname.substr(0, modelname.rfind("."));
+
+
+
+      std::time_t ttime = std::time(0);
+      std::tm* gmt_time = std::gmtime(&ttime);
+      std::string parsetime (std::asctime(gmt_time));
+
+
 
 
       GOOGLE_PROTOBUF_VERIFY_VERSION;
       //model I/O
       onnx::ModelProto model;
-      RModel rmodel(modelname);
+      RModel rmodel(filename, parsetime);
 
       std::fstream input(filename, std::ios::in | std::ios::binary);
       if (!model.ParseFromIstream(&input)){
