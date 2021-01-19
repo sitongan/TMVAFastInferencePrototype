@@ -24,6 +24,10 @@ private:
    std::unordered_map<std::string, InitializedTensor> fInitializedTensors;
    bool fAllTensorInitialized = false;
 
+   std::string fName;
+
+   std::string fGC; //generated code
+
 public:
 
    //explicit move ctor/assn
@@ -47,9 +51,10 @@ public:
    RModel(const RModel& other) = delete;
    RModel& operator=(const RModel& other) = delete;
 
-   RModel(){};
+   RModel(){}
+   RModel(std::string name): fName (name) {}
 
-   void addInputTensorInfo(std::string input_name, ETensorType type, std::vector<Dim> shape){
+   void AddInputTensorInfo(std::string input_name, ETensorType type, std::vector<Dim> shape){
       if (fInputTensorInfos.find(input_name) != fInputTensorInfos.end()){
          throw std::runtime_error("TMVA-SOFIE: input tensor with name " + input_name + " already exists \n");
       }
@@ -57,7 +62,7 @@ public:
       fInputTensorInfos[input_name] = inputInfo;
    }
 
-   void addInputTensorInfo(std::string input_name, ETensorType type, std::vector<size_t> shape){
+   void AddInputTensorInfo(std::string input_name, ETensorType type, std::vector<size_t> shape){
       if (fInputTensorInfos.find(input_name) != fInputTensorInfos.end()){
          throw std::runtime_error("TMVA-SOFIE: input tensor with name " + input_name + " already exists \n");
       }
@@ -66,7 +71,7 @@ public:
    }
 
 
-   void addOperator(std::unique_ptr<ROperator> op, size_t order_execution = -1){
+   void AddOperator(std::unique_ptr<ROperator> op, size_t order_execution = -1){
 
       if (order_execution >= 0) {
          fOperators.insert(fOperators.begin() + order_execution, std::move(op));
@@ -77,7 +82,7 @@ public:
    }
 
 
-   void addInitializedTensors(std::string tensor_name, ETensorType type, std::vector<std::size_t> shape, std::shared_ptr<void> data){
+   void AddInitializedTensors(std::string tensor_name, ETensorType type, std::vector<std::size_t> shape, std::shared_ptr<void> data){
       //NB: own data
       if (fInitializedTensors.find(tensor_name) != fInitializedTensors.end()){
          throw std::runtime_error("TMVA-SOFIE: initialized tensor with name " + tensor_name + " already exists \n");
@@ -85,6 +90,18 @@ public:
       InitializedTensor new_tensor {type, shape, data};
       fInitializedTensors[tensor_name] = new_tensor;
    }
+
+   void Generate(){
+      fGC += ("namespace TMVA_SOFIE_" + fName + "{\n");
+
+
+
+
+
+
+      fGC += ("} //TMVA_SOFIE_" + fName + "\n");
+   }
+
 
 /*
    template <typename T>

@@ -31,18 +31,30 @@ const factoryMethodMap mapOptypeOperator = {
 
 
 ROperator* make_ROperator(size_t idx, const onnx::GraphProto& graphproto, const std::unordered_map<std::string, size_t>& tensorname2idx);
-}
+}//INTERNAL
+
+
 
 class RModelParser_ONNX{
 public:
    RModel Parse(std::string filename){
-      auto extension = filename.substr(filename.length() - 4);
-      std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+      char sep = '/';
+      #ifdef _WIN32
+         sep = '\\';
+      #endif
+      size_t i = filename.rfind(sep, filename.length());
+      std::string modelname;
+      if (i != std::string::npos){
+         modelname = (filename.substr(i+1, filename.length() - i));
+      }else{
+         modelname = filename.substr(0, filename.rfind("."));
+      }
+
 
       GOOGLE_PROTOBUF_VERIFY_VERSION;
       //model I/O
       onnx::ModelProto model;
-      RModel rmodel;
+      RModel rmodel(modelname);
 
       std::fstream input(filename, std::ios::in | std::ios::binary);
       if (!model.ParseFromIstream(&input)){
@@ -90,7 +102,7 @@ public:
             fShape.push_back(dim);
          } //in case this TensorShapeProto has no dimension message: ONNX IR defines this to be a scalar
 
-         rmodel.addInputTensorInfo(input_name, type, fShape);
+         rmodel.AddInputTensorInfo(input_name, type, fShape);
 
       }
 
@@ -117,7 +129,7 @@ public:
                   tensorproto->mutable_float_data()->ExtractSubrange(0, tensorproto->float_data_size(), static_cast<float*>(data.get()));
                }
 
-               rmodel.addInitializedTensors(input_name, ETensorType::FLOAT, fShape, data);
+               rmodel.AddInitializedTensors(input_name, ETensorType::FLOAT, fShape, data);
                break;
             }
             default: throw std::runtime_error("Data type in weight tensor " + graph.initializer(i).name() + " not supported!\n");
