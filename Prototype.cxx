@@ -73,13 +73,16 @@ int main(){
    for (int i =0; i < c_length; i++){
       std::cout << output[i] << "\t";
    }
+	std::cout << "\n";
 
 
    TMVA::Experimental::SOFIE::RModelParser_ONNX parser;
    TMVA::Experimental::SOFIE::RModel model = parser.Parse("./LinearNN.onnx");
-   //TMVA::Experimental::SOFIE::RModel model2 = std::move(model);
+   TMVA::Experimental::SOFIE::RModel model2 = std::move(model);
    //model2.printRequiredInputTensors();
    //model2.printInitializedTensors();
    //model2.headInitializedTensors("18.bias");
    //model2.headInitializedTensors("0.weight");
+	model2.Generate();
+	model2.PrintGenerated();
 }

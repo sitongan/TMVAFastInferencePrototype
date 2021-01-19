@@ -47,8 +47,9 @@ public:
       if (i != std::string::npos){
          modelname = (filename.substr(i+1, filename.length() - i));
       }else{
-         modelname = filename.substr(0, filename.rfind("."));
+         modelname = filename;
       }
+      modelname = modelname.substr(0, modelname.rfind("."));
 
 
       GOOGLE_PROTOBUF_VERIFY_VERSION;

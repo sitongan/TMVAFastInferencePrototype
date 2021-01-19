@@ -37,6 +37,7 @@ public:
       fOperators = std::move(other.fOperators);
       fInitializedTensors = std::move(other.fInitializedTensors);
       fAllTensorInitialized = other.fAllTensorInitialized;
+      fName = other.fName;
    }
 
    RModel& operator=(RModel&& other){
@@ -44,6 +45,7 @@ public:
       fOperators = std::move(other.fOperators);
       fInitializedTensors = std::move(other.fInitializedTensors);
       fAllTensorInitialized = other.fAllTensorInitialized;
+      fName = other.fName;
       return *this;
    }
 
@@ -100,6 +102,10 @@ public:
 
 
       fGC += ("} //TMVA_SOFIE_" + fName + "\n");
+   }
+
+   void PrintGenerated(){
+      std::cout << fGC;
    }
 
 
