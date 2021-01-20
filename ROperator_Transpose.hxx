@@ -12,21 +12,39 @@ namespace SOFIE{
 
 
 
-template <typename V, typename C = tensor_t<V>>
+template <typename V>
 class ROperator_Transpose final : public ROperator
 {
 
 private:
-   std::vector<int> attr_perm;
-   std::unique_ptr<C> data;
-   std::unique_ptr<C> transposed;
+   std::vector<int_t> fAttrPerm;
+   std::string fNData;
+   std::string fNOutput;
+
+   std::string fType;
 
 public:
 
    ROperator_Transpose() = delete;
+   ROperator_Transpose<T>::ROperator_Transpose(std::vector<int_t> attr_perm, std::string nameData, std::string nameOutput):
+      fAttrPerm(attr_perm), fNData(nameData), fNOutput(nameOutput) {
 
-   ROperator_Transpose<float>::ROperator_Transpose(std::vector<int_t> attr_perm, C&& data, C&& transposed):
-      attr_perm(attr_perm), data(data), transposed(transposed) {}
+      if (is_same<T, float>::value) {
+         fType = "float";
+      }else{
+         throw std::runtime_error("TMVA SOFIE Encountered unsupported type parsing a transpose operator");
+      }
+   }
+
+   ROperator_Transpose<T>::Initialize(const RModel& model){
+
+   }
+
+
+
+
+   //ROperator_Transpose<float>::ROperator_Transpose(std::vector<int_t> attr_perm, C&& data, C&& transposed):
+   //   attr_perm(attr_perm), data(data), transposed(transposed) {}
 
 
 
