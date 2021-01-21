@@ -37,7 +37,12 @@ public:
       }
    }
 
-   void Initialize(const RModel& model){
+   void Initialize(RModel& model){
+      if (model.CheckIfTensorAlreadyExist(fNData) == false){   //input must be a graph input, or already initialized intermediate tensor
+         throw std::runtime_error("TMVA SOFIE Tranpose Op Input Tensor is not found in model");
+      }
+
+
 
    }
 

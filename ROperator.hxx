@@ -20,7 +20,7 @@ class ROperator{
 
 public:
    virtual const std::vector<std::vector<size_t>> shapeInference() = 0;
-   virtual void Initialize(RModel&); //
+   virtual void Initialize(RModel&); 
 
    //virtual void Forward_reference() = 0;
    //irtual void Forward_blas() = 0;

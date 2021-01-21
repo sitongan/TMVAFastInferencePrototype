@@ -31,9 +31,14 @@ struct Dim{
 std::vector<Dim> ConvertShapeToDim(std::vector<size_t> shape);
 
 
-struct TensorInfo{
+struct InputTensorInfo{
    ETensorType type;
    std::vector<Dim> shape;
+};
+
+struct TensorInfo{
+   ETensorType type;
+   std::vector<size_t> shape;
 };
 
 std::size_t ConvertShapeToLength(std::vector<size_t> shape);

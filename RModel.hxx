@@ -19,8 +19,9 @@ class RModel{
 
 private:
 
-   std::unordered_map<std::string, TensorInfo> fInputTensorInfos; //graph input only; not including operator input (intermediate tensors)
+   std::unordered_map<std::string, InputTensorInfo> fInputTensorInfos; //graph input only; not including operator input (intermediate tensors)
    std::unordered_map<std::string, InitializedTensor> fInitializedTensors;
+   std::unordered_map<std::string, TensorInfo> fIntermediateTensorInfos;
 
    std::vector<std::unique_ptr<ROperator>> fOperators;
    bool fAllTensorInitialized = false;
