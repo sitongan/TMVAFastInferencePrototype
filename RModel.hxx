@@ -48,6 +48,7 @@ public:
    RModel(std::string name, std::string parsedtime);
 
    const std::vector<Dim>& GetTensorShape(std::string name);
+   const ETensorType& GetTensorType(std::string name);
 
    bool CheckIfTensorAlreadyExist(std::string tensor_name);
    void AddInputTensorInfo(std::string input_name, ETensorType type, std::vector<Dim> shape);

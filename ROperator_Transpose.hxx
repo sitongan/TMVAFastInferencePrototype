@@ -37,12 +37,18 @@ public:
       }
    }
 
+
+
    void Initialize(RModel& model){
       if (model.CheckIfTensorAlreadyExist(fNData) == false){   //input must be a graph input, or already initialized intermediate tensor
          throw std::runtime_error("TMVA SOFIE Tranpose Op Input Tensor is not found in model");
       }
-
-
+      auto input_shape {model.GetTensorShape(fNData)};
+      std::vector<size_t> output_shape;
+      for (int i = 0; i < fAttrPerm.size(); i++){
+         output_shape[fAttrPerm[i]] = input_shape[i];
+      }
+      model.AddIntermediateTensor(fNOutput, model.GetTensorType(fNData), output_shape);
 
    }
 

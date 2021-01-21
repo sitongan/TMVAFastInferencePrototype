@@ -47,6 +47,20 @@ namespace SOFIE{
       }
    }
 
+   const ETensorType& RModel::GetTensorType(std::string name){
+      auto f = fInputTensorInfos.find(name);
+      if (f != fInputTensorInfos.end()){
+         return f->second.type;
+      }else{
+         auto f2 = fInitializedTensors.find(name);
+         if (f2 != fInitializedTensors.end()){
+            return f->second.type;
+         }else{
+            throw std::runtime_error("TMVA SOFIE tensor [" + name + "] for which the type is requested is not found");
+         }
+      }
+   }
+
    bool RModel::CheckIfTensorAlreadyExist(std::string tensor_name){
       if (fInputTensorInfos.find(tensor_name) != fInputTensorInfos.end())  return true;
       if (fInitializedTensors.find(tensor_name) != fInitializedTensors.end()) return true;
