@@ -4,6 +4,7 @@
 
 #include "SOFIE_common.hxx"
 #include "ROperator.hxx"
+#include "RModel.hxx"
 
 namespace TMVA{
 namespace Experimental{
@@ -12,7 +13,7 @@ namespace SOFIE{
 
 
 
-template <typename V>
+template <typename T>
 class ROperator_Transpose final : public ROperator
 {
 
@@ -26,17 +27,17 @@ private:
 public:
 
    ROperator_Transpose() = delete;
-   ROperator_Transpose<T>::ROperator_Transpose(std::vector<int_t> attr_perm, std::string nameData, std::string nameOutput):
+   ROperator_Transpose(std::vector<int_t> attr_perm, std::string nameData, std::string nameOutput):
       fAttrPerm(attr_perm), fNData(nameData), fNOutput(nameOutput) {
 
-      if (is_same<T, float>::value) {
+      if (std::is_same<T, float>::value) {
          fType = "float";
       }else{
          throw std::runtime_error("TMVA SOFIE Encountered unsupported type parsing a transpose operator");
       }
    }
 
-   ROperator_Transpose<T>::Initialize(const RModel& model){
+   void Initialize(const RModel& model){
 
    }
 

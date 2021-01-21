@@ -20,9 +20,9 @@ class RModel{
 private:
 
    std::unordered_map<std::string, TensorInfo> fInputTensorInfos; //graph input only; not including operator input (intermediate tensors)
-   std::vector<std::unique_ptr<ROperator>> fOperators;
-
    std::unordered_map<std::string, InitializedTensor> fInitializedTensors;
+
+   std::vector<std::unique_ptr<ROperator>> fOperators;
    bool fAllTensorInitialized = false;
 
    std::string fName="UninitializedModel";
@@ -48,11 +48,12 @@ public:
 
    const std::vector<Dim>& GetTensorShape(std::string name);
 
-
+   bool CheckIfTensorAlreadyExist(std::string tensor_name);
    void AddInputTensorInfo(std::string input_name, ETensorType type, std::vector<Dim> shape);
    void AddInputTensorInfo(std::string input_name, ETensorType type, std::vector<size_t> shape);
    void AddOperator(std::unique_ptr<ROperator> op, size_t order_execution = -1);
-   void AddInitializedTensors(std::string tensor_name, ETensorType type, std::vector<std::size_t> shape, std::shared_ptr<void> data);
+   void AddInitializedTensor(std::string tensor_name, ETensorType type, std::vector<std::size_t> shape, std::shared_ptr<void> data);
+   void AddIntermediateTensor(std::string tensor_name, ETensorType type, std::vector<std::size_t> shape);
    void Generate();
 
    void PrintGenerated(){
@@ -62,7 +63,7 @@ public:
 
 /*
    template <typename T>
-   void addInitializedTensors(std::string tensor_name, RTensor<T> new_tensor){
+   void AddInitializedTensor(std::string tensor_name, RTensor<T> new_tensor){
       //a view only
       T obj;
       if (fInitializedTensors.find(tensor_name) != fInitializedTensors.end()){

@@ -47,16 +47,23 @@ namespace SOFIE{
       }
    }
 
+   bool RModel::CheckIfTensorAlreadyExist(std::string tensor_name){
+      if (fInputTensorInfos.find(tensor_name) != fInputTensorInfos.end())  return true;
+      if (fInitializedTensors.find(tensor_name) != fInitializedTensors.end()) return true;
+      return false;
+   }
+
    void RModel::AddInputTensorInfo(std::string input_name, ETensorType type, std::vector<Dim> shape){
-      if (fInputTensorInfos.find(input_name) != fInputTensorInfos.end()){
+      if (CheckIfTensorAlreadyExist(input_name)){
          throw std::runtime_error("TMVA-SOFIE: input tensor with name " + input_name + " already exists \n");
       }
+
       TensorInfo inputInfo { type, shape };
       fInputTensorInfos[input_name] = inputInfo;
    }
 
    void RModel::AddInputTensorInfo(std::string input_name, ETensorType type, std::vector<size_t> shape){
-      if (fInputTensorInfos.find(input_name) != fInputTensorInfos.end()){
+      if (CheckIfTensorAlreadyExist(input_name)){
          throw std::runtime_error("TMVA-SOFIE: input tensor with name " + input_name + " already exists \n");
       }
       TensorInfo inputInfo { type, ConvertShapeToDim(shape) };
@@ -71,10 +78,26 @@ namespace SOFIE{
       }
    }
 
-   void RModel::AddInitializedTensors(std::string tensor_name, ETensorType type, std::vector<std::size_t> shape, std::shared_ptr<void> data){
+   void RModel::AddInitializedTensor(std::string tensor_name, ETensorType type, std::vector<std::size_t> shape, std::shared_ptr<void> data){
       //NB: own data
-      if (fInitializedTensors.find(tensor_name) != fInitializedTensors.end()){
+      if (CheckIfTensorAlreadyExist(tensor_name)){
          throw std::runtime_error("TMVA-SOFIE: initialized tensor with name " + tensor_name + " already exists \n");
+      }
+      InitializedTensor new_tensor {type, shape, data};
+      fInitializedTensors[tensor_name] = new_tensor;
+   }
+
+   void RModel::AddIntermediateTensor(std::string tensor_name, ETensorType type, std::vector<std::size_t> shape){
+      if (CheckIfTensorAlreadyExist(tensor_name)){
+         throw std::runtime_error("TMVA-SOFIE: intermediate tensor with name " + tensor_name + " already exists \n");
+      }
+      std::shared_ptr<void> data;
+      size_t length = 1;
+      for (auto& i : shape){
+         length *= i;
+      }
+      if (type == ETensorType::FLOAT){
+         data = std::make_shared<float> (length);
       }
       InitializedTensor new_tensor {type, shape, data};
       fInitializedTensors[tensor_name] = new_tensor;

@@ -5,7 +5,7 @@
 
 #include "SOFIE_common.hxx"
 #include "RModel.hxx"
-
+#include "OperatorList.hxx"
 
 #include <string>
 #include <fstream>
@@ -136,7 +136,7 @@ public:
                   tensorproto->mutable_float_data()->ExtractSubrange(0, tensorproto->float_data_size(), static_cast<float*>(data.get()));
                }
 
-               rmodel.AddInitializedTensors(input_name, ETensorType::FLOAT, fShape, data);
+               rmodel.AddInitializedTensor(input_name, ETensorType::FLOAT, fShape, data);
                break;
             }
             default: throw std::runtime_error("Data type in weight tensor " + graph.initializer(i).name() + " not supported!\n");
