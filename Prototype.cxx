@@ -33,16 +33,16 @@ int main(){
       a[i] = (float)(i +1);
    }
 
-   int perm[dim] ={4, 3,2,1};
+   int perm[dim] ={3,2,1,0};
    int index_goto[dim];
    for (int i = 0; i < dim; i++){
-      index_goto[perm[i] - 1] = i + 1;
+      index_goto[perm[i]] = i + 1;
    }
    int new_shape[dim];
    int t = 1;
    int new_sizeofindex[dim];
    for (int i = dim - 1; i>=0; i--){
-      new_shape[i] = shape[perm[i] - 1];
+      new_shape[i] = shape[perm[i]];
       new_sizeofindex[i] = t;
       t *= new_shape[i];
    }
