@@ -19,8 +19,9 @@ class ROperator{
 
 
 public:
-   virtual const std::vector<std::vector<size_t>> shapeInference() = 0;
-   virtual void Initialize(RModel&) = 0; 
+   virtual const std::vector<std::vector<size_t>> ShapeInference(std::vector<std::vector<size_t>>) = 0;
+   virtual void Initialize(RModel&) = 0;
+   virtual std::string Generate() = 0;
 
    //virtual void Forward_reference() = 0;
    //irtual void Forward_blas() = 0;

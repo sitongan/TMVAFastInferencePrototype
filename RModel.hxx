@@ -20,6 +20,7 @@ class RModel{
 private:
 
    std::unordered_map<std::string, InputTensorInfo> fInputTensorInfos; //graph input only; not including operator input (intermediate tensors)
+   std::unordered_map<std::string, TensorInfo> fReadyInputTensorInfos;
    std::unordered_map<std::string, InitializedTensor> fInitializedTensors;
    std::unordered_map<std::string, TensorInfo> fIntermediateTensorInfos;
 
@@ -47,7 +48,7 @@ public:
    RModel(){}
    RModel(std::string name, std::string parsedtime);
 
-   const std::vector<Dim>& GetTensorShape(std::string name);
+   const std::vector<size_t>& GetTensorShape(std::string name);
    const ETensorType& GetTensorType(std::string name);
 
    bool CheckIfTensorAlreadyExist(std::string tensor_name);

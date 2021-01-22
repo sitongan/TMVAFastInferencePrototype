@@ -33,36 +33,42 @@ namespace SOFIE{
       fName = fFileName.substr(0, fFileName.rfind("."));
    }
 
-   const std::vector<Dim>& RModel::GetTensorShape(std::string name){
-      auto f = fInputTensorInfos.find(name);
-      if (f != fInputTensorInfos.end()){
+   const std::vector<size_t>& RModel::GetTensorShape(std::string name){
+      auto f = fReadyInputTensorInfos.find(name);
+      if (f != fReadyInputTensorInfos.end()){
          return f->second.shape;
-      }else{
-         auto f2 = fInitializedTensors.find(name);
-         if (f2 != fInitializedTensors.end()){
-            return f->second.shape;
-         }else{
-            throw std::runtime_error("TMVA SOFIE tensor [" + name + "] for which the shape is requested is not found");
-         }
       }
+      auto f2 = fInitializedTensors.find(name);
+      if (f2 != fInitializedTensors.end()){
+         return f2->second.shape;
+      }
+      auto f3 = fInputTensorInfos.find(name);
+      if (f3 != fInputTensorInfos.end()){
+         throw std::runtime_error("TMVA SOFIE tensor [" + name + "] is an input tensor with unspecified dimension parameter");
+      }
+
+      throw std::runtime_error("TMVA SOFIE tensor [" + name + "] for which the shape is requested is not found");
    }
 
    const ETensorType& RModel::GetTensorType(std::string name){
-      auto f = fInputTensorInfos.find(name);
-      if (f != fInputTensorInfos.end()){
+      auto f = fReadyInputTensorInfos.find(name);
+      if (f != fReadyInputTensorInfos.end()){
          return f->second.type;
-      }else{
-         auto f2 = fInitializedTensors.find(name);
-         if (f2 != fInitializedTensors.end()){
-            return f->second.type;
-         }else{
-            throw std::runtime_error("TMVA SOFIE tensor [" + name + "] for which the type is requested is not found");
-         }
       }
+      auto f2 = fInitializedTensors.find(name);
+      if (f2 != fInitializedTensors.end()){
+         return f2->second.type;
+      }
+      auto f3 = fInputTensorInfos.find(name);
+      if (f3 != fInputTensorInfos.end()){
+         return f3->second.type;
+      }
+
+      throw std::runtime_error("TMVA SOFIE tensor [" + name + "] for which the shape is requested is not found");
    }
 
    bool RModel::CheckIfTensorAlreadyExist(std::string tensor_name){
-      if (fInputTensorInfos.find(tensor_name) != fInputTensorInfos.end())  return true;
+      if (fReadyInputTensorInfos.find(tensor_name) != fReadyInputTensorInfos.end())  return true;
       if (fInitializedTensors.find(tensor_name) != fInitializedTensors.end()) return true;
       if (fIntermediateTensorInfos.find(tensor_name) != fIntermediateTensorInfos.end()) return true;
       return false;
@@ -81,8 +87,8 @@ namespace SOFIE{
       if (CheckIfTensorAlreadyExist(input_name)){
          throw std::runtime_error("TMVA-SOFIE: input tensor with name " + input_name + " already exists \n");
       }
-      InputTensorInfo inputInfo { type, ConvertShapeToDim(shape) };
-      fInputTensorInfos[input_name] = inputInfo;
+      TensorInfo inputInfo { type, shape };
+      fReadyInputTensorInfos[input_name] = inputInfo;
    }
 
    void RModel::AddOperator(std::unique_ptr<ROperator> op, size_t order_execution){

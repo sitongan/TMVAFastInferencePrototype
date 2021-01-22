@@ -1,5 +1,5 @@
 CXX = g++
-CPPFLAGS = --std=c++11 -MMD -MP -g
+CPPFLAGS = -std=c++14 -MMD -MP -g
 PROTOBUF = `pkg-config --cflags protobuf`
 PROTOBUFL = `pkg-config --libs protobuf`
 ROOTCONFIG =
@@ -12,7 +12,7 @@ SOFIEHEADER =
 SOFIE = $(SOFIEOBEJCT) $(SOFIEHEADER)
 
 prototype: ${SRC:%.cxx=%.o}
-	${CXX} -o prototype $^ $(BLASFLAG) $(ROOTCONFIG) $(PROTOBUFL) ${CPPFLAGS}
+	${CXX} -o prototype $^ ${CPPFLAGS} $(BLASFLAG) $(ROOTCONFIG) $(PROTOBUFL) 
 
 
 -include $(SRC:%.cxx=%.d)
