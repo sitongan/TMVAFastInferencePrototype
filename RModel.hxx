@@ -34,6 +34,8 @@ private:
 
    std::string fGC; //generated code
 
+   bool fNeedGemm = true;
+
 public:
 
    //explicit move ctor/assn

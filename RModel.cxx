@@ -119,7 +119,13 @@ namespace SOFIE{
    void RModel::Generate(){
       fGC += ("//Code generated automatically by TMVA for Inference of Model file [" + fFileName + "] at [" + fParseTime.substr(0, fParseTime.length()-1) +"] \n");
       fGC += ("namespace TMVA_SOFIE_" + fName + "{\n");
-
+      if (fNeedGemm){
+         fGC += ("namespace BLAS{\n"
+         "\textern \"C\" void sgemm_(const char * transa, const char * transb, const int * m, const int * n, const int * k,\n"
+         "\t                       const float * alpha, const float * A, const int * lda, const float * B, const int * ldb,\n"
+         "\t                       const float * beta, float * C, const int * ldc);\n"
+         "}//BLAS\n");
+      }
 
 
 
