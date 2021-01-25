@@ -107,6 +107,29 @@ namespace SOFIE{
          }
          std::stringstream out;
          std::string name_a = fNA;
+         std::string name_b = fNB;
+
+         if (fAttrTransA){
+            name_a += "_transposed"
+            int dim = fShapeA[1];
+            out << "\t" << fType << " " << fNA << "_identity[" << dim * dim << "] = {";
+            for (int i =0; i < dim; i++){
+               for (int j = 0; j < dim; j++){
+                  if (fType == "float"){
+                     if (i == j){
+                        out << "1.0";
+                     }else{
+                        out << "0.0";
+                     }
+                  }else{
+                     throw std::runtime_error("TMVA SOFIE Gemm Op non float type unsupported at the moment");
+                  }
+                  if ((i!= dim-1) && (j!= dim-1)) out << ",";
+                  }
+               }
+            out << "}\n"
+            }
+         }
 
 
       }

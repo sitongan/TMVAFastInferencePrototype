@@ -19,18 +19,24 @@ int main(){
 
    float c[6] = {0};
 
+   int tA = 1;
+   int tB = 1;
 
-
-   char transA = 'N';
-   char transB = 'N';
+   char transA = tA? 't' : 'n';
+   char transB = tB? 't' : 'n';
    int m = 2;
    int n = 2;
    int k = 3;
    float attr_alpha =1.0;
    float attr_beta =1.0;
 
-   int lda = k;
-   int ldb = n;
+   int lda = tA? m: k;
+   //int lda = m;
+
+   int ldb = tB? k: n;
+   //int ldb = n;
+   //int ldb = k;
+
 
    BLAS::sgemm_(&transB, &transA, &n, &m, &k, &attr_alpha, b, &ldb, a,  &lda, &attr_beta, c, &n);
    //BLAS::sgemm_(&transA, &transB, &m, &n, &k, &attr_alpha, a, &lda, b,  &ldb, &attr_beta, c, &n);
