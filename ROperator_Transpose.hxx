@@ -21,6 +21,7 @@ class ROperator_Transpose final : public ROperator
 
 private:
    std::vector<int_t> fAttrPerm;
+
    std::string fNData;
    std::string fNOutput;
    std::vector<size_t> fShapeData;
@@ -101,22 +102,6 @@ public:
    }
 
 
-
-
-
-   //ROperator_Transpose<float>::ROperator_Transpose(std::vector<int_t> attr_perm, C&& data, C&& transposed):
-   //   attr_perm(attr_perm), data(data), transposed(transposed) {}
-
-
-
-   /*
-   ROperator_Gemm(const onnx::NodeProto& nodeproto, RGraph& this_graph);
-   ROperator_Gemm(const std::string& name_A , const std::string& name_B, const std::string& name_C,
-      const std::string& name_Y, float attribute_alpha, float attribute_beta, int attribute_transA, int attribute_transB,
-      RGraph& this_graph);
-   void Forward_reference() final;
-   void Forward_blas() final;
-   */
 };
 
 }//SOFIE
