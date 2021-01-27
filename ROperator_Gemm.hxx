@@ -8,6 +8,8 @@
 
 #include <sstream>
 #include <algorithm>
+#include <iterator>
+#include <iomanip>
 
 namespace TMVA{
 namespace Experimental{
@@ -99,40 +101,46 @@ namespace SOFIE{
          }
 
          model.AddIntermediateTensor(fNY, model.GetTensorType(fNA), fShapeY);
+         model.AddNeededStdLib("algorithm");
+
       }
 
-      std::string Generate(){
+
+
+      std::string Generate(std::string OpName){
+         OpName = "op_" + OpName;
          if (fShapeA.empty() || fShapeB.empty() || fShapeY.empty() || (fCexists && fShapeC.empty())){
             throw std::runtime_error("TMVA SOFIE Gemm Op called to Generate without being initialized first");
          }
          std::stringstream out;
-         std::string name_a = fNA;
-         std::string name_b = fNB;
-
-         if (fAttrTransA){
-            name_a += "_transposed"
-            int dim = fShapeA[1];
-            out << "\t" << fType << " " << fNA << "_identity[" << dim * dim << "] = {";
-            for (int i =0; i < dim; i++){
-               for (int j = 0; j < dim; j++){
-                  if (fType == "float"){
-                     if (i == j){
-                        out << "1.0";
-                     }else{
-                        out << "0.0";
-                     }
-                  }else{
-                     throw std::runtime_error("TMVA SOFIE Gemm Op non float type unsupported at the moment");
-                  }
-                  if ((i!= dim-1) && (j!= dim-1)) out << ",";
-                  }
-               }
-            out << "}\n"
+         out <<"\t" << "char " << OpName << "_transA = " << (fAttrTransA ? "\'t\'" : "\'n\'") << ";\n";
+         out <<"\t" << "char " << OpName << "_transB = " << (fAttrTransB ? "\'t\'" : "\'n\'") << ";\n";
+         out <<"\t" << "int " << OpName << "_m = " << fShapeA[0] << ";\n";
+         out <<"\t" << "int " << OpName << "_n = " << fShapeB[1] << ";\n";
+         out <<"\t" << "int " << OpName << "_k = " << fShapeA[1] << ";\n";
+         out <<"\t" << "float " << OpName << "_alpha = " << std::setprecision(std::numeric_limits<float>::max_digits10) << fAttrAlpha << ";\n";
+         out <<"\t" << "float " << OpName << "_beta = " << std::setprecision(std::numeric_limits<float>::max_digits10) << fAttrBeta << ";\n";
+         out <<"\t" << "int " << OpName << "_lda = " << (fAttrTransA ? fShapeA[0] : fShapeA[1]) << ";\n";
+         out <<"\t" << "int " << OpName << "_ldb = " << (fAttrTransB ? fShapeA[1] : fShapeB[1]) << ";\n";
+         if (fCexists){
+            int length = 1;
+            for (auto& i: fShapeC){
+               length *= i;
             }
+            out << "\t" << "std::copy(" << "tensor_" << fNC << ", " << "tensor_" << fNC << " + " << length << ", " << "tensor_" << fNY << ");\n";
+         }
+         if (fType == "float"){
+            out << "\t" << "BLAS::sgemm_(&" << OpName << "_transB, &" << OpName << "_transA, &" << OpName
+             << "_n, &" << OpName << "_m, &" << OpName << "_k, &" << OpName << "_alpha, " << "tensor_" << fNB
+             << ", &" << OpName << "_ldb, " << "tensor_" << fNA << ", &" << OpName << "_beta, " << "tensor_" << fNY << ", &"
+             << OpName << "_n);\n";
+          }
+
+          return out.str();
+
          }
 
 
-      }
 
    };
 
