@@ -32,6 +32,8 @@ int main(){
    model3.AddInputTensorInfo("4", ETensorType::FLOAT, {3,2});
    std::unique_ptr<ROperator> op2 (new ROperator_Gemm<float> (1.0, 1.0, 0, 0, "3", "4", "5"));
    model3.AddOperator(std::move(op2));
+   std::unique_ptr<ROperator> op3 (new ROperator_Relu<float> ("5", "6"));
+   model3.AddOperator(std::move(op3));
    //op2->Initialize(model3);
    //std::cout << (op2->Generate("2"));
 
