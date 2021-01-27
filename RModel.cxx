@@ -91,7 +91,7 @@ namespace SOFIE{
       fReadyInputTensorInfos[input_name] = inputInfo;
    }
 
-   void RModel::AddOperator(std::unique_ptr<ROperator> op, size_t order_execution){
+   void RModel::AddOperator(std::unique_ptr<ROperator> op, int order_execution){
       if (order_execution >= 0) {
          fOperators.insert(fOperators.begin() + order_execution, std::move(op));
       }else{
@@ -116,8 +116,18 @@ namespace SOFIE{
       fIntermediateTensorInfos[tensor_name] = new_tensor;
    }
 
+   void RModel::Initialize(){
+      for (auto& i : fOperators){
+         i->Initialize(*this);
+      }
+   }
+
    void RModel::Generate(){
+      Initialize();
       fGC += ("//Code generated automatically by TMVA for Inference of Model file [" + fFileName + "] at [" + fParseTime.substr(0, fParseTime.length()-1) +"] \n");
+      for (auto& i: fNeededStdLib){
+         fGC += "#include<" + i + ">\n";
+      }
       fGC += ("namespace TMVA_SOFIE_" + fName + "{\n");
       if (fNeedGemm){
          fGC += ("namespace BLAS{\n"
@@ -125,7 +135,14 @@ namespace SOFIE{
          "\t                       const float * alpha, const float * A, const int * lda, const float * B, const int * ldb,\n"
          "\t                       const float * beta, float * C, const int * ldc);\n"
          "}//BLAS\n");
+
+      fGC += "void infer(){\n";
+      for (int id = 0; id < fOperators.size() ; id++){
+         fGC+= (fOperators[id]->Generate(std::to_string(id)));
       }
+      fGC += "}\n";
+      }
+
 
 
 

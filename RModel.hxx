@@ -6,6 +6,7 @@
 #include <iostream>
 #include <memory>
 #include <ctime>
+#include <set>
 
 #include "SOFIE_common.hxx"
 #include "ROperator.hxx"
@@ -27,14 +28,18 @@ private:
    std::vector<std::unique_ptr<ROperator>> fOperators;
    bool fAllTensorInitialized = false;
 
-   std::string fName="UninitializedModel";
+   std::string fName="UnnamedModel";
    std::string fFileName; //file name of original model file for identification
    std::string fParseTime; //UTC date and time string at parsing
 
 
    std::string fGC; //generated code
-
    bool fNeedGemm = true;
+
+   const std::vector<std::string> fAllowedStdLib = {"algorithm"};
+   std::set<std::string> fNeededStdLib;
+
+   void Initialize();
 
 public:
 
@@ -56,9 +61,14 @@ public:
    bool CheckIfTensorAlreadyExist(std::string tensor_name);
    void AddInputTensorInfo(std::string input_name, ETensorType type, std::vector<Dim> shape);
    void AddInputTensorInfo(std::string input_name, ETensorType type, std::vector<size_t> shape);
-   void AddOperator(std::unique_ptr<ROperator> op, size_t order_execution = -1);
+   void AddOperator(std::unique_ptr<ROperator> op, int order_execution = -1);
    void AddInitializedTensor(std::string tensor_name, ETensorType type, std::vector<std::size_t> shape, std::shared_ptr<void> data);
    void AddIntermediateTensor(std::string tensor_name, ETensorType type, std::vector<std::size_t> shape);
+   void AddNeededStdLib(std::string libname){
+      for (auto& i: fAllowedStdLib){
+         if ( i == libname) fNeededStdLib.insert(libname);
+      }
+   };
    void Generate();
 
    void PrintGenerated(){
