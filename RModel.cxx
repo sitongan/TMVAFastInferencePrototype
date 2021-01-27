@@ -46,6 +46,10 @@ namespace SOFIE{
       if (f3 != fInputTensorInfos.end()){
          throw std::runtime_error("TMVA SOFIE tensor [" + name + "] is an input tensor with unspecified dimension parameter");
       }
+      auto f4 = fIntermediateTensorInfos.find(name);
+      if (f4 != fIntermediateTensorInfos.end()){
+         return f4->second.shape;
+      }
 
       throw std::runtime_error("TMVA SOFIE tensor [" + name + "] for which the shape is requested is not found");
    }
@@ -62,6 +66,10 @@ namespace SOFIE{
       auto f3 = fInputTensorInfos.find(name);
       if (f3 != fInputTensorInfos.end()){
          return f3->second.type;
+      }
+      auto f4 = fIntermediateTensorInfos.find(name);
+      if (f4 != fIntermediateTensorInfos.end()){
+         return f4->second.type;
       }
 
       throw std::runtime_error("TMVA SOFIE tensor [" + name + "] for which the shape is requested is not found");
