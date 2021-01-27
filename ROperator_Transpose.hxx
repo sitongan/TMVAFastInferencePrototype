@@ -27,19 +27,11 @@ private:
    std::vector<size_t> fShapeData;
    std::vector<size_t> fShapeOutput;
 
-   std::string fType;
-
 public:
 
    ROperator_Transpose() = delete;
    ROperator_Transpose(std::vector<int_t> attr_perm, std::string nameData, std::string nameOutput):
       fAttrPerm(attr_perm), fNData(nameData), fNOutput(nameOutput) {
-
-      if (std::is_same<T, float>::value) {
-         fType = "float";
-      }else{
-         throw std::runtime_error("TMVA SOFIE Encountered unsupported type parsing a transpose operator");
-      }
    }
 
    const std::vector<std::vector<size_t>> ShapeInference(std::vector<std::vector<size_t>> input){
@@ -54,6 +46,7 @@ public:
       return ret;
    }
 
+
    void Initialize(RModel& model){
       if (model.CheckIfTensorAlreadyExist(fNData) == false){   //input must be a graph input, or already initialized intermediate tensor
          throw std::runtime_error("TMVA SOFIE Tranpose Op Input Tensor is not found in model");
@@ -67,7 +60,8 @@ public:
       fShapeOutput = output_shape;
    }
 
-   std::string Generate(){
+   std::string Generate(std::string OpName){
+      OpName = "op_" + OpName;
       if (fShapeData.empty() || fShapeOutput.empty()){
          throw std::runtime_error("TMVA SOFIE Transpose Op called to Generate without being initialized first");
       }
