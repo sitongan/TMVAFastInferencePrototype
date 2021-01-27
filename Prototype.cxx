@@ -16,18 +16,26 @@ int main(){
    //model2.printInitializedTensors();
    //model2.headInitializedTensors("18.bias");
    //model2.headInitializedTensors("0.weight");
-	model2.Generate();
-	model2.PrintGenerated();
+
 
 	std::cout << "===" << std::endl;
 
 	RModel model3;
 	model3.AddInputTensorInfo("1", ETensorType::FLOAT, {1,2,3,4});
 	//auto op = std::make_unique<ROperator_Transpose<float>>({3,2,1,0}, "1", "2");
-	std::unique_ptr<ROperator_Transpose<float>>op ( new ROperator_Transpose<float>({3,2,1,0}, "1", "2")) ;
-	auto  a = model3.GetTensorShape("1");
+	std::unique_ptr<ROperator>op ( new ROperator_Transpose<float>({3,2,1,0}, "1", "2")) ;
+   model3.AddOperator(std::move(op));
+	//op->Initialize(model3);
+	//std::cout << (op->Generate("1"));
 
-	op->Initialize(model3);
-	std::cout << (op->Generate());
+   model3.AddInputTensorInfo("3", ETensorType::FLOAT, {2,3});
+   model3.AddInputTensorInfo("4", ETensorType::FLOAT, {3,2});
+   std::unique_ptr<ROperator> op2 (new ROperator_Gemm<float> (1.0, 1.0, 0, 0, "3", "4", "5"));
+   model3.AddOperator(std::move(op2));
+   //op2->Initialize(model3);
+   //std::cout << (op2->Generate("2"));
+
+   model3.Generate();
+	model3.PrintGenerated();
 
 }
