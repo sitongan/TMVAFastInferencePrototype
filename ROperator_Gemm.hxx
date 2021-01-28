@@ -29,7 +29,7 @@ namespace SOFIE{
       bool fCexists;
       std::string fNA;
       std::string fNB;
-      std::string fNC;
+      std::string fNC = "";
       std::string fNY;
       std::vector<size_t> fShapeA;
       std::vector<size_t> fShapeB;
@@ -49,7 +49,16 @@ namespace SOFIE{
          }else{
             throw std::runtime_error("TMVA SOFIE Encountered unsupported type parsing a gemm operator");
          }
-         fCexists = false;
+      }
+
+      ROperator_Gemm(float alpha, float beta, int_t transA, int_t transB, std::string nameA, std::string nameB, std::string nameC, std::string nameY):
+         fAttrAlpha(alpha), fAttrBeta(beta), fAttrTransA(transA), fAttrTransB(transB), fNA(nameA), fNB(nameB), fNC(nameC), fNY(nameY) {
+
+         if (std::is_same<T, float>::value) {
+            fType = "float";
+         }else{
+            throw std::runtime_error("TMVA SOFIE Encountered unsupported type parsing a gemm operator");
+         }
       }
 
       std::vector<ETensorType> TypeInference(std::vector<ETensorType> input){
@@ -88,7 +97,7 @@ namespace SOFIE{
          if ((model.CheckIfTensorAlreadyExist(fNA) == false) || (model.CheckIfTensorAlreadyExist(fNB) == false) ){   //input must be a graph input, or already initialized intermediate tensor
             throw std::runtime_error("TMVA SOFIE Gemm Op Input Tensor is not found in model");
          }
-         if (fCexists){
+         if (fNC != ""){
             if (model.CheckIfTensorAlreadyExist(fNC) == false){   //input must be a graph input, or already initialized intermediate tensor
                throw std::runtime_error("TMVA SOFIE Gemm Op Input Tensor is not found in model");
             }
@@ -127,7 +136,7 @@ namespace SOFIE{
          out <<"\t" << "float " << OpName << "_beta = " << std::setprecision(std::numeric_limits<float>::max_digits10) << fAttrBeta << ";\n";
          out <<"\t" << "int " << OpName << "_lda = " << (fAttrTransA ? fShapeA[0] : fShapeA[1]) << ";\n";
          out <<"\t" << "int " << OpName << "_ldb = " << (fAttrTransB ? fShapeA[1] : fShapeB[1]) << ";\n";
-         if (fCexists){
+         if (fNC != ""){
             int length = 1;
             for (auto& i: fShapeC){
                length *= i;
