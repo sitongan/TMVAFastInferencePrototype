@@ -52,7 +52,12 @@ namespace SOFIE{
          fCexists = false;
       }
 
-      const std::vector<std::vector<size_t>> ShapeInference(std::vector<std::vector<size_t>> input){
+      std::vector<ETensorType> TypeInference(std::vector<ETensorType> input){
+         ETensorType out = input[0];
+         return {out};
+      }
+
+      std::vector<std::vector<size_t>> ShapeInference(std::vector<std::vector<size_t>> input){
          if (input.size() > 3) throw std::runtime_error("TMVA SOFIE Gemm Op Shape Inference only need 2 or 3 input tensor");
          for (auto& i: input){
             if (i.size() > 2){

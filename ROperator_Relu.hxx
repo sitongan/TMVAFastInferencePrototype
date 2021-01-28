@@ -25,7 +25,12 @@ public:
    ROperator_Relu() = delete;
    ROperator_Relu(std::string nameX, std::string nameY):
       fNX(nameX), fNY(nameY){}
-   const std::vector<std::vector<size_t>> ShapeInference(std::vector<std::vector<size_t>> input){
+
+   std::vector<ETensorType> TypeInference(std::vector<ETensorType> input){
+      return input;
+   }
+
+   std::vector<std::vector<size_t>> ShapeInference(std::vector<std::vector<size_t>> input){
       auto ret = input; //suggest copy to compiler
       return ret;
    }
@@ -50,7 +55,7 @@ public:
          length *= i;
       }
       out << "\t" << "for (int id = 0; id < " << length << " ; id++){\n";
-      out << "\t\t" << "tensor_" << fNY << "[id] = ((tensor_" << fNX << "[id] > 0 ?) tensor_" << fNX << "[id] : 0);\n";
+      out << "\t\t" << "tensor_" << fNY << "[id] = ((tensor_" << fNX << "[id] > 0 )? tensor_" << fNX << "[id] : 0);\n";
       out << "\t}\n";
       return out.str();
    }

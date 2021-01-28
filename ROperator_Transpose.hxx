@@ -34,7 +34,11 @@ public:
       fAttrPerm(attr_perm), fNData(nameData), fNOutput(nameOutput) {
    }
 
-   const std::vector<std::vector<size_t>> ShapeInference(std::vector<std::vector<size_t>> input){
+   std::vector<ETensorType> TypeInference(std::vector<ETensorType> input){
+      return input;
+   }
+
+   std::vector<std::vector<size_t>> ShapeInference(std::vector<std::vector<size_t>> input){
       if (input.size() > 1) throw std::runtime_error("TMVA SOFIE Tranpose Op Shape Inference only need 1 input tensor");
       auto& data = input[0];
       std::vector<size_t> output_shape(fAttrPerm.size());
