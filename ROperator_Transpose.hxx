@@ -62,7 +62,7 @@ public:
       fShapeData = model.GetTensorShape(fNData);
       if (fAttrPerm.size() == 0){
          for (int i = fShapeData.size() - 1; i >= 0; i--){
-            attr_perm.push_back(i);
+            fAttrPerm.push_back(i);
          }
       }
 
@@ -70,7 +70,7 @@ public:
       for (int i = 0; i < fAttrPerm.size(); i++){
          output_shape[fAttrPerm[i]] = fShapeData[i];
       }
-      
+
       model.AddIntermediateTensor(fNOutput, model.GetTensorType(fNData), output_shape);
       fShapeOutput = output_shape;
    }

@@ -23,7 +23,7 @@ namespace INTERNAL{
 //ROperator* make_ROperator_Transpose(const onnx::NodeProto& nodeproto, const onnx::GraphProto& graphproto, const std::unordered_map<std::string, size_t>& tensorname2idx);
 //unique_ptr<ROperator> make_ROperator_Relu(const onnx::NodeProto& nodeproto, RModel& this_graph);
 
-using factoryMethodMap = std::unordered_map<std::string, ROperator* (*)(const onnx::NodeProto&, const onnx::GraphProto&, const std::unordered_map<std::string, size_t>&)>;
+using factoryMethodMap = std::unordered_map<std::string, std::unique_ptr<ROperator> (*)(const onnx::NodeProto&, const onnx::GraphProto&, std::unordered_map<std::string, ETensorType>&)>;
 const factoryMethodMap mapOptypeOperator = {
       //{"Gemm", &make_ROperator_Gemm}//,
       //{"Transpose", &make_ROperator_Transpose}//,
@@ -31,7 +31,7 @@ const factoryMethodMap mapOptypeOperator = {
    };
 
 
-ROperator* make_ROperator(size_t idx, const onnx::GraphProto& graphproto, const std::unordered_map<std::string, size_t>& tensorname2idx);
+std::unique_ptr<ROperator> make_ROperator(size_t idx, const onnx::GraphProto& graphproto, std::unordered_map<std::string, ETensorType>& tensor_type);
 }//INTERNAL
 
 
@@ -63,6 +63,8 @@ public:
       onnx::ModelProto model;
       RModel rmodel(filename, parsetime);
 
+      std::unordered_map<std::string, ETensorType> tensor_type;
+
       std::fstream input(filename, std::ios::in | std::ios::binary);
       if (!model.ParseFromIstream(&input)){
          throw std::runtime_error("TMVA::SOFIE - Failed to parse onnx file");
@@ -76,9 +78,11 @@ public:
          initializer_names.insert(graph.initializer(i).name());
       }
 
-      std::unordered_map<std::string, size_t> tensorname2idx;
+
       for (int i=0; i < graph.input_size(); i++){
-         tensorname2idx.emplace(graph.input(i).name(), i);
+
+         tensor_type[graph.input(i).name()] = static_cast<ETensorType>(graph.input(i).type().tensor_type().elem_type());
+
          if (initializer_names.find(graph.input(i).name()) != initializer_names.end())  continue;
 
          //input datanode is not a weight node (has no initializer)
@@ -144,11 +148,11 @@ public:
       }
 
 
-/*
+
       for (int i=0; i < graph.node_size(); i++){
-         rmodel.addOperator(std::move(std::unique_ptr<ROperator>(INTERNAL::make_ROperator(i, graph, tensorname2idx))));
+         rmodel.AddOperator(std::move(INTERNAL::make_ROperator(i, graph, tensor_type)));
       }
-*/
+
 
 
       return rmodel;
