@@ -8,24 +8,27 @@ namespace Experimental{
 namespace SOFIE{
 
    RModel::RModel(RModel&& other){
-      fInputTensorInfos = other.fInputTensorInfos;
       fInputTensorInfos = std::move(other.fInputTensorInfos);
+      fReadyInputTensorInfos = std::move(other.fReadyInputTensorInfos);
       fOperators = std::move(other.fOperators);
       fInitializedTensors = std::move(other.fInitializedTensors);
-      fAllTensorInitialized = other.fAllTensorInitialized;
       fName = other.fName;
       fFileName = other.fFileName;
       fParseTime = other.fParseTime;
+      fGC = other.fGC;
+      fNeededStdLib = other.fNeededStdLib;
    }
 
    RModel& RModel::operator=(RModel&& other){
       fInputTensorInfos = std::move(other.fInputTensorInfos);
+      fReadyInputTensorInfos = std::move(other.fReadyInputTensorInfos);
       fOperators = std::move(other.fOperators);
       fInitializedTensors = std::move(other.fInitializedTensors);
-      fAllTensorInitialized = other.fAllTensorInitialized;
       fName = other.fName;
       fFileName = other.fFileName;
       fParseTime = other.fParseTime;
+      fGC = other.fGC;
+      fNeededStdLib = other.fNeededStdLib;
       return *this;
    }
 
@@ -97,6 +100,7 @@ namespace SOFIE{
       }
       TensorInfo inputInfo { type, shape };
       fReadyInputTensorInfos[input_name] = inputInfo;
+      std::cout << "BEEP" << std::endl;
    }
 
    void RModel::AddOperator(std::unique_ptr<ROperator> op, int order_execution){
@@ -114,6 +118,7 @@ namespace SOFIE{
       }
       InitializedTensor new_tensor {type, shape, data};
       fInitializedTensors[tensor_name] = new_tensor;
+
    }
 
    void RModel::AddIntermediateTensor(std::string tensor_name, ETensorType type, std::vector<std::size_t> shape){
@@ -122,6 +127,23 @@ namespace SOFIE{
       }
       TensorInfo new_tensor {type, shape};
       fIntermediateTensorInfos[tensor_name] = new_tensor;
+   }
+
+   void RModel::UpdateInitializedTensor(std::string tensor_name, ETensorType type, std::vector<std::size_t> shape, std::shared_ptr<void> data){
+      if (not CheckIfTensorAlreadyExist(tensor_name)){
+         throw std::runtime_error("TMVA-SOFIE: tensor " + tensor_name + " not found when trying to update it");
+      }
+      InitializedTensor new_tensor {type, shape, data};
+      fInitializedTensors[tensor_name] = new_tensor;
+   }
+
+   std::shared_ptr<void> RModel::GetInitializedTensorData(std::string tensor_name){
+      auto f = fInitializedTensors.find(tensor_name);
+      if (f == fInitializedTensors.end()){
+         throw std::runtime_error("TMVA-SOFIE: tensor " + tensor_name + " not found when trying to get its data");
+      }else{
+         return f->second.data;
+      }
    }
 
    void RModel::Initialize(){
@@ -164,7 +186,7 @@ namespace SOFIE{
    void RModel::PrintRequiredInputTensors(){
       std::cout << "Model requires following inputs:\n";
       for (auto& inputInfo: fInputTensorInfos){
-         std::cout << "Tensor name: " << inputInfo.first << "\t";
+         std::cout << "Parameterised Tensor name: " << inputInfo.first << "\t";
          std::cout << "type: " << ConvertTypeToString(inputInfo.second.type) << "\t";
          std::cout << "shape: [";
          for (int i = 0; i < inputInfo.second.shape.size(); i++){
@@ -177,11 +199,37 @@ namespace SOFIE{
          }
          std::cout << "]" << std::endl;
       }
+
+      for (auto& inputInfo: fReadyInputTensorInfos){
+         std::cout << "Fully Specified Tensor name: " << inputInfo.first << "\t";
+         std::cout << "type: " << ConvertTypeToString(inputInfo.second.type) << "\t";
+         std::cout << "shape: [";
+         for (int i = 0; i < inputInfo.second.shape.size(); i++){
+            std::cout << inputInfo.second.shape[i];
+            if (i < inputInfo.second.shape.size() - 1) std::cout << ",";
+         }
+         std::cout << "]" << std::endl;
+      }
+
    }
 
    void RModel::PrintInitializedTensors(){
       std::cout << "Model initialized the following tensors:\n";
       for (auto& it: fInitializedTensors){
+         std::cout << "Tensor name: \"" << it.first << "\"\t";
+         std::cout << "type: " << ConvertTypeToString(it.second.type) << "\t";
+         std::cout << "shape: [";
+         for (int i = 0; i < it.second.shape.size(); i++){
+            std::cout << it.second.shape[i];
+            if (i < it.second.shape.size() - 1) std::cout << ",";
+         }
+         std::cout << "]" << std::endl;
+      }
+   }
+
+   void RModel::PrintIntermediateTensors(){
+      std::cout << "Model specify the following intermediate tensors:\n";
+      for (auto& it: fIntermediateTensorInfos){
          std::cout << "Tensor name: \"" << it.first << "\"\t";
          std::cout << "type: " << ConvertTypeToString(it.second.type) << "\t";
          std::cout << "shape: [";

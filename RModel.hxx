@@ -26,7 +26,6 @@ private:
    std::unordered_map<std::string, TensorInfo> fIntermediateTensorInfos;
 
    std::vector<std::unique_ptr<ROperator>> fOperators;
-   bool fAllTensorInitialized = false;
 
    std::string fName="UnnamedModel";
    std::string fFileName; //file name of original model file for identification
@@ -39,7 +38,7 @@ private:
    const std::vector<std::string> fAllowedStdLib = {"algorithm"};
    std::set<std::string> fNeededStdLib;
 
-   void Initialize();
+
 
 public:
 
@@ -68,12 +67,18 @@ public:
       for (auto& i: fAllowedStdLib){
          if ( i == libname) fNeededStdLib.insert(libname);
       }
-   };
+   }
+   void UpdateInitializedTensor(std::string tensor_name, ETensorType type, std::vector<std::size_t> shape, std::shared_ptr<void> data);
+   std::shared_ptr<void> GetInitializedTensorData(std::string tensor_name);
+
+
+   void Initialize();
    void Generate();
 
    void PrintGenerated(){
       std::cout << fGC;
    }
+   void PrintIntermediateTensors();
 
 
 /*
