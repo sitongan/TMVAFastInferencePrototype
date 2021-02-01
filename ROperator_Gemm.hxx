@@ -26,7 +26,6 @@ namespace SOFIE{
       int_t fAttrTransA = 0;
       int_t fAttrTransB = 0;
 
-      bool fCexists;
       std::string fNA;
       std::string fNB;
       std::string fNC = "";
@@ -93,26 +92,52 @@ namespace SOFIE{
          return ret;
       }
 
+
+
       void Initialize(RModel& model){
+         //TODO: propagate A or B as specified by ONNX standard
+
          if ((model.CheckIfTensorAlreadyExist(fNA) == false) || (model.CheckIfTensorAlreadyExist(fNB) == false) ){   //input must be a graph input, or already initialized intermediate tensor
-            throw std::runtime_error("TMVA SOFIE Gemm Op Input Tensor is not found in model");
+            throw std::runtime_error("TMVA SOFIE Gemm Op Input Tensor " + fNA + " or " + fNB + " is not found in model");
          }
          if (fNC != ""){
             if (model.CheckIfTensorAlreadyExist(fNC) == false){   //input must be a graph input, or already initialized intermediate tensor
-               throw std::runtime_error("TMVA SOFIE Gemm Op Input Tensor is not found in model");
+               throw std::runtime_error("TMVA SOFIE Gemm Op Input Tensor" + fNC + " is not found in model");
             }
          }
          fShapeA = model.GetTensorShape(fNA);
+         if (fShapeA.size() != 2){
+            throw std::runtime_error("TMVA SOFIE Gemm Op Input Tensor" + fNA + " is not of 2 dimensions");
+         }
          fShapeB = model.GetTensorShape(fNB);
-         if (fCexists){
+         if (fShapeB.size() != 2){
+            throw std::runtime_error("TMVA SOFIE Gemm Op Input Tensor" + fNB + " is not of 2 dimensions");
+         }
+         fShapeY = ShapeInference({fShapeA, fShapeB})[0];
+         if (fNC != ""){
             fShapeC = model.GetTensorShape(fNC);
+
+            bool broadcast_needed = false;
+            for (int i =0; i < fShapeC.size(); i++){
+               if (fShapeC[i]!=fShapeY[i]){
+                  broadcast_needed = true;
+                  break;
+               }
+            }
+
+            if (broadcast_needed){
+               auto original_data = model.GetInitializedTensorData(fNC);
+               if (fType == "float"){
+                  std::vector<float>* new_data = new std::vector<float>((UTILITY::Unidirectional_broadcast<float>(static_cast<float*>(original_data.get()), fShapeC, fShapeY)));
+                  std::shared_ptr<void> new_data_ptr(new_data->data(), free);
+
+                  model.UpdateInitializedTensor(fNC, model.GetTensorType(fNC), fShapeY, new_data_ptr);
+               }
+            }
          }
 
-         if (fCexists){
-            fShapeY = fShapeC;
-         }else{
-            fShapeY = ShapeInference({fShapeA, fShapeB})[0];
-         }
+
+
 
          model.AddIntermediateTensor(fNY, model.GetTensorType(fNA), fShapeY);
          model.AddNeededStdLib("algorithm");
@@ -123,7 +148,7 @@ namespace SOFIE{
 
       std::string Generate(std::string OpName){
          OpName = "op_" + OpName;
-         if (fShapeA.empty() || fShapeB.empty() || fShapeY.empty() || (fCexists && fShapeC.empty())){
+         if (fShapeA.empty() || fShapeB.empty() || fShapeY.empty() || (fNC != "" && fShapeC.empty())){
             throw std::runtime_error("TMVA SOFIE Gemm Op called to Generate without being initialized first");
          }
          std::stringstream out;

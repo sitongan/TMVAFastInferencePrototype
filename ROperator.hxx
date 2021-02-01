@@ -25,11 +25,12 @@ public:
    virtual std::string Generate(std::string OpName) = 0;  //expect unique opname for each operator within the same RModel
    virtual std::string Header() { return "";}
 
+
    //virtual void Forward_reference() = 0;
    //irtual void Forward_blas() = 0;
    virtual ~ROperator(){}
 
-   
+
 
 
 };

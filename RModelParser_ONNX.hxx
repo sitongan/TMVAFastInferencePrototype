@@ -19,15 +19,17 @@ namespace SOFIE{
 
 
 namespace INTERNAL{
-//unique_ptr<ROperator> make_ROperator_Gemm(const onnx::NodeProto& nodeproto, RModel& this_graph);
-//ROperator* make_ROperator_Transpose(const onnx::NodeProto& nodeproto, const onnx::GraphProto& graphproto, const std::unordered_map<std::string, size_t>& tensorname2idx);
-//unique_ptr<ROperator> make_ROperator_Relu(const onnx::NodeProto& nodeproto, RModel& this_graph);
+
+std::unique_ptr<ROperator> make_ROperator_Transpose(const onnx::NodeProto& nodeproto, const onnx::GraphProto& graphproto, std::unordered_map<std::string, ETensorType>& tensor_type);
+std::unique_ptr<ROperator> make_ROperator_Relu(const onnx::NodeProto& nodeproto, const onnx::GraphProto& graphproto, std::unordered_map<std::string, ETensorType>& tensor_type);
+std::unique_ptr<ROperator> make_ROperator_Gemm(const onnx::NodeProto& nodeproto, const onnx::GraphProto& graphproto, std::unordered_map<std::string, ETensorType>& tensor_type);
+
 
 using factoryMethodMap = std::unordered_map<std::string, std::unique_ptr<ROperator> (*)(const onnx::NodeProto&, const onnx::GraphProto&, std::unordered_map<std::string, ETensorType>&)>;
 const factoryMethodMap mapOptypeOperator = {
-      //{"Gemm", &make_ROperator_Gemm}//,
-      //{"Transpose", &make_ROperator_Transpose}//,
-      //{"Relu", &make_ROperator_Relu}
+      {"Gemm", &make_ROperator_Gemm},
+      {"Transpose", &make_ROperator_Transpose},
+      {"Relu", &make_ROperator_Relu}
    };
 
 
@@ -94,6 +96,7 @@ public:
          }
 
          std::vector<Dim> fShape;
+         bool existParam = false;
          if (!valueinfoproto.type().tensor_type().has_shape()) throw std::runtime_error("TMVA::SOFIE datanode with no shape restrictions is not supported yet");
          for (int i = 0; i < valueinfoproto.type().tensor_type().shape().dim_size(); i++){
             Dim dim;
@@ -101,6 +104,7 @@ public:
                dim.dim = valueinfoproto.type().tensor_type().shape().dim(i).dim_value();
             }else if (valueinfoproto.type().tensor_type().shape().dim(i).value_case() == onnx::TensorShapeProto_Dimension::ValueCase::kDimParam){
                dim.isParam = true;
+               existParam = true;
                dim.param = valueinfoproto.type().tensor_type().shape().dim(i).dim_param();
             }else{
                throw std::runtime_error("TMVA::SOFIE ONNX file error: Valueinfoproto " + input_name + " has neither dim_value nor dim_param! \n");
@@ -113,7 +117,16 @@ public:
             fShape.push_back(dim);
          } //in case this TensorShapeProto has no dimension message: ONNX IR defines this to be a scalar
 
-         rmodel.AddInputTensorInfo(input_name, type, fShape);
+         if (!existParam){
+            std::vector<size_t> fShape_sizet;
+            for (auto& i: fShape){
+               fShape_sizet.push_back(i.dim);
+            }
+
+            rmodel.AddInputTensorInfo(input_name, type, fShape_sizet);
+         }else{
+            rmodel.AddInputTensorInfo(input_name, type, fShape);
+         }
 
       }
 

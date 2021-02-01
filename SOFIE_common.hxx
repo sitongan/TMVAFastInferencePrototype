@@ -70,6 +70,10 @@ ETensorType GetTemplatedType(T obj){
    //complex 64, 28, bfloat 16 unimplemented
 }
 
+namespace UTILITY{
+template<typename T>
+std::vector<T> Unidirectional_broadcast(const T* original_data, const std::vector<size_t> original_shape, const std::vector<size_t> target_shape);
+}
 
 namespace BLAS{
 extern "C" void sgemm_(const char * transa, const char * transb, const int * m, const int * n, const int * k,

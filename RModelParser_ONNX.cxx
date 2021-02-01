@@ -51,6 +51,14 @@ std::unique_ptr<ROperator> make_ROperator_Transpose(const onnx::NodeProto& nodep
    default:
       throw std::runtime_error("TMVA::SOFIE - Unsupported - Operator Transpose does not yet support input type " + std::to_string(static_cast<int>(input_type)));
    }
+
+   ETensorType output_type = (op->TypeInference({input_type}))[0];
+   auto it2 = tensor_type.find(nodeproto.output(0));
+   if (it2 == tensor_type.end()){
+      tensor_type[nodeproto.output(0)] = output_type;
+   }
+
+
    return std::move(op);
 }
 
@@ -76,6 +84,13 @@ std::unique_ptr<ROperator> make_ROperator_Relu(const onnx::NodeProto& nodeproto,
    default:
       throw std::runtime_error("TMVA::SOFIE - Unsupported - Operator Relu does not yet support input type " + std::to_string(static_cast<int>(input_type)));
    }
+
+   ETensorType output_type = (op->TypeInference({input_type}))[0];
+   auto it2 = tensor_type.find(nodeproto.output(0));
+   if (it2 == tensor_type.end()){
+      tensor_type[nodeproto.output(0)] = output_type;
+   }
+
    return std::move(op);
 }
 
@@ -127,6 +142,14 @@ std::unique_ptr<ROperator> make_ROperator_Gemm(const onnx::NodeProto& nodeproto,
    default:
       throw std::runtime_error("TMVA::SOFIE - Unsupported - Operator Relu does not yet support input type " + std::to_string(static_cast<int>(input_type)));
    }
+
+   ETensorType output_type = (op->TypeInference({input_type, input_type}))[0];
+   auto it2 = tensor_type.find(nodeproto.output(0));
+   if (it2 == tensor_type.end()){
+      tensor_type[nodeproto.output(0)] = output_type;
+   }
+
+
    return std::move(op);
 }
 

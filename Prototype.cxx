@@ -12,12 +12,20 @@ int main(){
    RModelParser_ONNX parser;
    RModel model = parser.Parse("./LinearNN.onnx");
    RModel model2 = std::move(model);
-   //model2.printRequiredInputTensors();
-   //model2.printInitializedTensors();
-   //model2.headInitializedTensors("18.bias");
-   //model2.headInitializedTensors("0.weight");
+   model2.PrintRequiredInputTensors();
+   model2.PrintInitializedTensors();
+   model2.HeadInitializedTensors("18.bias");
+   model2.HeadInitializedTensors("0.weight");
 
+	std::cout << "===" << std::endl;
 
+   //model2.Generate();
+   //model2.PrintGenerated();
+   model2.Initialize();
+   model2.PrintInitializedTensors();
+   model2.HeadInitializedTensors("6.bias", 100);
+   //model2.PrintIntermediateTensors();
+/*
 	std::cout << "===" << std::endl;
 
 	RModel model3;
@@ -39,5 +47,5 @@ int main(){
 
    model3.Generate();
 	model3.PrintGenerated();
-
+*/
 }
