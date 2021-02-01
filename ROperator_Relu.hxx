@@ -24,7 +24,7 @@ private:
 public:
    ROperator_Relu() = delete;
    ROperator_Relu(std::string nameX, std::string nameY):
-      fNX(nameX), fNY(nameY){}
+      fNX(UTILITY::Clean_name(nameX)), fNY(UTILITY::Clean_name(nameY)){}
 
    std::vector<ETensorType> TypeInference(std::vector<ETensorType> input){
       return input;

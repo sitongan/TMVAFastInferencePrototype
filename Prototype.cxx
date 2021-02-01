@@ -3,6 +3,9 @@
 #include "RModel.hxx"
 #include "RModelParser_ONNX.hxx"
 
+#include <cctype>
+#include <algorithm>
+
 
 using namespace TMVA::Experimental::SOFIE;
 
@@ -19,11 +22,18 @@ int main(){
 
 	std::cout << "===" << std::endl;
 
-   //model2.Generate();
+   model2.Generate();
    //model2.PrintGenerated();
-   model2.Initialize();
+   //model2.Initialize();
    model2.PrintInitializedTensors();
    model2.HeadInitializedTensors("6.bias", 100);
+
+
+	std::cout << "===" << std::endl;
+
+
+
+   model2.PrintGenerated();
    //model2.PrintIntermediateTensors();
 /*
 	std::cout << "===" << std::endl;

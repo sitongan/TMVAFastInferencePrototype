@@ -86,6 +86,7 @@ namespace SOFIE{
    }
 
    void RModel::AddInputTensorInfo(std::string input_name, ETensorType type, std::vector<Dim> shape){
+      input_name = UTILITY::Clean_name(input_name);
       if (CheckIfTensorAlreadyExist(input_name)){
          throw std::runtime_error("TMVA-SOFIE: input tensor with name " + input_name + " already exists \n");
       }
@@ -95,6 +96,7 @@ namespace SOFIE{
    }
 
    void RModel::AddInputTensorInfo(std::string input_name, ETensorType type, std::vector<size_t> shape){
+      input_name = UTILITY::Clean_name(input_name);
       if (CheckIfTensorAlreadyExist(input_name)){
          throw std::runtime_error("TMVA-SOFIE: input tensor with name " + input_name + " already exists \n");
       }
@@ -112,6 +114,7 @@ namespace SOFIE{
    }
 
    void RModel::AddInitializedTensor(std::string tensor_name, ETensorType type, std::vector<std::size_t> shape, std::shared_ptr<void> data){
+      tensor_name = UTILITY::Clean_name(tensor_name);
       //NB: own data
       if (CheckIfTensorAlreadyExist(tensor_name)){
          throw std::runtime_error("TMVA-SOFIE: initialized tensor with name " + tensor_name + " already exists \n");
@@ -122,6 +125,7 @@ namespace SOFIE{
    }
 
    void RModel::AddIntermediateTensor(std::string tensor_name, ETensorType type, std::vector<std::size_t> shape){
+      tensor_name = UTILITY::Clean_name(tensor_name);
       if (CheckIfTensorAlreadyExist(tensor_name)){
          throw std::runtime_error("TMVA-SOFIE: intermediate tensor with name " + tensor_name + " already exists \n");
       }
@@ -130,6 +134,7 @@ namespace SOFIE{
    }
 
    void RModel::UpdateInitializedTensor(std::string tensor_name, ETensorType type, std::vector<std::size_t> shape, std::shared_ptr<void> data){
+      tensor_name = UTILITY::Clean_name(tensor_name);
       if (not CheckIfTensorAlreadyExist(tensor_name)){
          throw std::runtime_error("TMVA-SOFIE: tensor " + tensor_name + " not found when trying to update it");
       }

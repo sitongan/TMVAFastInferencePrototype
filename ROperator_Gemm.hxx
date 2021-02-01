@@ -41,7 +41,8 @@ namespace SOFIE{
 
       ROperator_Gemm() = delete;
       ROperator_Gemm(float alpha, float beta, int_t transA, int_t transB, std::string nameA, std::string nameB, std::string nameY):
-         fAttrAlpha(alpha), fAttrBeta(beta), fAttrTransA(transA), fAttrTransB(transB), fNA(nameA), fNB(nameB), fNY(nameY) {
+         fAttrAlpha(alpha), fAttrBeta(beta), fAttrTransA(transA), fAttrTransB(transB), fNA(UTILITY::Clean_name(nameA)),
+         fNB(UTILITY::Clean_name(nameB)), fNY(UTILITY::Clean_name(nameY)) {
 
          if (std::is_same<T, float>::value) {
             fType = "float";
@@ -51,7 +52,8 @@ namespace SOFIE{
       }
 
       ROperator_Gemm(float alpha, float beta, int_t transA, int_t transB, std::string nameA, std::string nameB, std::string nameC, std::string nameY):
-         fAttrAlpha(alpha), fAttrBeta(beta), fAttrTransA(transA), fAttrTransB(transB), fNA(nameA), fNB(nameB), fNC(nameC), fNY(nameY) {
+         fAttrAlpha(alpha), fAttrBeta(beta), fAttrTransA(transA), fAttrTransB(transB), fNA(UTILITY::Clean_name(nameA)),
+         fNB(UTILITY::Clean_name(nameB)), fNC(UTILITY::Clean_name(nameC)), fNY(UTILITY::Clean_name(nameY)) {
 
          if (std::is_same<T, float>::value) {
             fType = "float";

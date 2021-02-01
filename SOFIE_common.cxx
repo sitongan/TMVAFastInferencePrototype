@@ -1,5 +1,5 @@
 #include "SOFIE_common.hxx"
-
+#include<cctype>
 
 namespace TMVA{
 namespace Experimental{
@@ -92,6 +92,12 @@ std::vector<T> UTILITY::Unidirectional_broadcast(const T* original_data, const s
          }
       }
       return new_datavector;
+}
+
+std::string UTILITY::Clean_name(std::string input_tensor_name){
+   std::string s (input_tensor_name);
+   s.erase(std::remove_if(s.begin(), s.end(), []( char const& c ) -> bool { return !std::isalnum(c); } ), s.end());
+   return s;
 }
 
 template std::vector<float> UTILITY::Unidirectional_broadcast(const float* original_data, const std::vector<size_t> original_shape, const std::vector<size_t> target_shape);

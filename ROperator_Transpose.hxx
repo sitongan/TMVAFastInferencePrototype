@@ -31,11 +31,11 @@ public:
 
    ROperator_Transpose() = delete;
    ROperator_Transpose(std::vector<int_t> attr_perm, std::string nameData, std::string nameOutput):
-      fAttrPerm(attr_perm), fNData(nameData), fNOutput(nameOutput) {
+      fAttrPerm(attr_perm), fNData(UTILITY::Clean_name(nameData)), fNOutput(UTILITY::Clean_name(nameOutput)) {
    }
 
    ROperator_Transpose(std::string nameData, std::string nameOutput):
-      fNData(nameData), fNOutput(nameOutput) {
+      fNData(UTILITY::Clean_name(nameData)), fNOutput(UTILITY::Clean_name(nameOutput)) {
    }
 
    std::vector<ETensorType> TypeInference(std::vector<ETensorType> input){
