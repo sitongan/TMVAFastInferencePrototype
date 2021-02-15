@@ -134,6 +134,7 @@ namespace SOFIE{
                   std::shared_ptr<void> new_data_ptr(new_data->data(), free);
 
                   model.UpdateInitializedTensor(fNC, model.GetTensorType(fNC), fShapeY, new_data_ptr);
+                  fShapeC = fShapeY;
                }
             }
          }

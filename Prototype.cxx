@@ -17,8 +17,8 @@ int main(){
    RModel model2 = std::move(model);
    model2.PrintRequiredInputTensors();
    model2.PrintInitializedTensors();
-   model2.HeadInitializedTensors("18.bias");
-   model2.HeadInitializedTensors("0.weight");
+   model2.HeadInitializedTensors("18bias");
+   model2.HeadInitializedTensors("0weight");
 
 	std::cout << "===" << std::endl;
 
@@ -26,7 +26,7 @@ int main(){
    //model2.PrintGenerated();
    //model2.Initialize();
    model2.PrintInitializedTensors();
-   model2.HeadInitializedTensors("6.bias", 100);
+   model2.HeadInitializedTensors("6bias", 100);
 
 
 	std::cout << "===" << std::endl;
