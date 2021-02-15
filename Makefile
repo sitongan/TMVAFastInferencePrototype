@@ -12,7 +12,7 @@ SOFIEHEADER =
 SOFIE = $(SOFIEOBEJCT) $(SOFIEHEADER)
 
 prototype: ${SRC:%.cxx=%.o}
-	${CXX} -o prototype $^ ${CPPFLAGS} $(BLASFLAG) $(ROOTCONFIG) $(PROTOBUFL) 
+	${CXX} -o prototype $^ ${CPPFLAGS} $(ROOTCONFIG) $(PROTOBUFL)
 
 
 -include $(SRC:%.cxx=%.d)

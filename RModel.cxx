@@ -171,6 +171,23 @@ namespace SOFIE{
          "\t                       const float * beta, float * C, const int * ldc);\n"
          "}//BLAS\n");
 
+      for (auto& i: fInitializedTensors){
+         if (i.second.type == ETensorType::FLOAT){
+            size_t length = 1;
+            for (auto & dim: i.second.shape){
+               length *= dim;
+            }
+            fGC += "\tfloat" + i.first + "[" + std::to_string(length) + "] = {";
+            std::shared_ptr<float> data = std::static_pointer_cast<float>(i.second.data);
+            std::stringstream floats;
+            for (int idx = 0; idx < length-1; idx++){
+               floats << std::setprecision(std::numeric_limits<float>::max_digits10) << data.get()[idx] << ", ";
+            }
+            floats << std::setprecision(std::numeric_limits<float>::max_digits10) << data.get()[length-1];
+            fGC += floats.str() +"}\n";
+         }
+      }
+
       fGC += "void infer(){\n";
       for (int id = 0; id < fOperators.size() ; id++){
          fGC+= (fOperators[id]->Generate(std::to_string(id)));

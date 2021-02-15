@@ -7,6 +7,7 @@
 #include <memory>
 #include <ctime>
 #include <set>
+#include <iomanip>
 
 #include "SOFIE_common.hxx"
 #include "ROperator.hxx"
