@@ -166,7 +166,11 @@ public:
          rmodel.AddOperator(std::move(INTERNAL::make_ROperator(i, graph, tensor_type)));
       }
 
-
+      std::vector<std::string> outputnames;
+      for (int i=0; i < graph.output_size(); i++){
+         outputnames.push_back(graph.output(i).name());
+      }
+      rmodel.AddOutputTensorNameList(outputnames);
 
       return rmodel;
 

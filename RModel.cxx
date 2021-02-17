@@ -17,6 +17,7 @@ namespace SOFIE{
       fParseTime = other.fParseTime;
       fGC = other.fGC;
       fNeededStdLib = other.fNeededStdLib;
+      fOutputTensorNames = other.fOutputTensorNames;
    }
 
    RModel& RModel::operator=(RModel&& other){
@@ -29,6 +30,7 @@ namespace SOFIE{
       fParseTime = other.fParseTime;
       fGC = other.fGC;
       fNeededStdLib = other.fNeededStdLib;
+      fOutputTensorNames = other.fOutputTensorNames;
       return *this;
    }
 
@@ -102,7 +104,6 @@ namespace SOFIE{
       }
       TensorInfo inputInfo { type, shape };
       fReadyInputTensorInfos[input_name] = inputInfo;
-      std::cout << "BEEP" << std::endl;
    }
 
    void RModel::AddOperator(std::unique_ptr<ROperator> op, int order_execution){
@@ -177,29 +178,63 @@ namespace SOFIE{
             for (auto & dim: i.second.shape){
                length *= dim;
             }
-            fGC += "\tfloat" + i.first + "[" + std::to_string(length) + "] = {";
+            fGC += "float tensor_" + i.first + "[" + std::to_string(length) + "] = {";
             std::shared_ptr<float> data = std::static_pointer_cast<float>(i.second.data);
             std::stringstream floats;
             for (int idx = 0; idx < length-1; idx++){
                floats << std::setprecision(std::numeric_limits<float>::max_digits10) << data.get()[idx] << ", ";
             }
             floats << std::setprecision(std::numeric_limits<float>::max_digits10) << data.get()[length-1];
-            fGC += floats.str() +"}\n";
+            fGC += floats.str() +"};\n";
+         }
+      }
+      for (auto&i: fIntermediateTensorInfos){
+         if (i.second.type == ETensorType::FLOAT){
+            size_t length = 1;
+            for (auto & dim: i.second.shape){
+               length *= dim;
+            }
+            fGC += "float tensor_" + i.first + "[" + std::to_string(length) + "];\n";
          }
       }
 
-      fGC += "void infer(){\n";
+      if (fOutputTensorNames.size() == 1){
+         auto f = fIntermediateTensorInfos.find(fOutputTensorNames[0]);
+         if (f == fIntermediateTensorInfos.end()){
+            throw std::runtime_error("TMVA-SOFIE: output tensor " + fOutputTensorNames[0] + " not found when trying to get its info");
+         }else{
+            if (f->second.type == ETensorType::FLOAT){
+               fGC += "std::vector<float> ";
+            }
+         }
+      }else{
+         std::cout << fOutputTensorNames.size() << std::endl;
+         throw std::runtime_error("TMVA-SOFIE: More than 1 output tensor is not yet supported");
+      }
+
+      fGC += "infer(";
+      for (auto& i: fReadyInputTensorInfos){
+         size_t length = 1;
+         for (auto& dim: i.second.shape){
+            length *= dim;
+         }
+         if (i.second.type == ETensorType::FLOAT){
+         fGC += "float tensor_" + i.first + "[" + std::to_string(length) + "],";
+         }
+         fGC.pop_back(); //remove last ","
+      }
+      fGC += "){\n";
+
       for (int id = 0; id < fOperators.size() ; id++){
          fGC+= (fOperators[id]->Generate(std::to_string(id)));
       }
+      if (fOutputTensorNames.size() == 1){
+         fGC += "\tstd::vector<float> ret (tensor_" + fOutputTensorNames[0] + ", tensor_" + fOutputTensorNames[0] + " + sizeof(tensor_" +
+               fOutputTensorNames[0] + ") / sizeof(tensor_" + fOutputTensorNames[0] + "[0]));\n";
+         fGC += "\treturn ret;\n";
+      }
       fGC += "}\n";
       }
-
-
-
-
-
-
       fGC += ("} //TMVA_SOFIE_" + fName + "\n");
    }
 
@@ -300,6 +335,16 @@ namespace SOFIE{
       if (ellipsis) std::cout << ", ...";
       std::cout << "]" << std::endl;
 
+   }
+
+   void RModel::OutputGenerated(std::string filename){
+      if (filename == ""){
+         filename = fName + ".hxx";
+      }
+      std::ofstream f;
+      f.open(filename);
+      f << fGC;
+      f.close();
    }
 
 }//SOFIE
