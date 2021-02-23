@@ -219,7 +219,7 @@ namespace SOFIE{
             length *= dim;
          }
          if (i.second.type == ETensorType::FLOAT){
-         fGC += "float tensor_" + i.first + "[" + std::to_string(length) + "],";
+         fGC += "float* tensor_" + i.first + ",";
          }
          fGC.pop_back(); //remove last ","
       }

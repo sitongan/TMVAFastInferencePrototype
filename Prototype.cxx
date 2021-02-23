@@ -33,7 +33,7 @@ int main(){
 
 
 
-   model2.PrintGenerated();
+   //model2.PrintGenerated();
    model2.OutputGenerated();
    //model2.PrintIntermediateTensors();
 /*

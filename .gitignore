@@ -5,3 +5,4 @@ test/*
 *.d
 prototype
 prototype.dSYM
+testinfer.dSYM

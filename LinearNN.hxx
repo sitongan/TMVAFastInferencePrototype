@@ -1,4 +1,4 @@
-//Code generated automatically by TMVA for Inference of Model file [LinearNN.onnx] at [Wed Feb 17 13:36:30 2021]
+//Code generated automatically by TMVA for Inference of Model file [LinearNN.onnx] at [Tue Feb 23 14:30:10 2021] 
 #include<algorithm>
 #include<vector>
 namespace TMVA_SOFIE_LinearNN{
@@ -46,12 +46,11 @@ float tensor_39[640];
 float tensor_38[3200];
 float tensor_22[3200];
 float tensor_21[3200];
-float temp[6400];
 std::vector<float> infer(float* tensor_input1){
 	char op_0_transA = 'n';
 	char op_0_transB = 't';
 	int op_0_m = 64;
-	int op_0_n = 100;
+	int op_0_n = 50;
 	int op_0_k = 100;
 	float op_0_alpha = 1;
 	float op_0_beta = 1;
@@ -177,7 +176,7 @@ std::vector<float> infer(float* tensor_input1){
 	char op_18_transA = 'n';
 	char op_18_transB = 't';
 	int op_18_m = 64;
-	int op_18_n = 50;
+	int op_18_n = 10;
 	int op_18_k = 50;
 	float op_18_alpha = 1;
 	float op_18_beta = 1;
