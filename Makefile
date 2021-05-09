@@ -15,7 +15,7 @@ prototype: ${SRC:%.cxx=%.o}
 	${CXX} -o prototype $^ ${CPPFLAGS} $(ROOTCONFIG) $(PROTOBUFL)
 
 testinfer: test.cpp LinearNN.hxx
-	${CXX} -o testinfer test.cpp -std=c++14 -g $(BLASFLAG)
+	${CXX} -o testinfer test.cpp -std=c++14 -g $(BLASFLAG) -O3
 
 -include $(SRC:%.cxx=%.d)
 

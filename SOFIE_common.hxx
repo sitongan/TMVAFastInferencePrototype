@@ -1,7 +1,7 @@
 #ifndef TMVA_SOFIE_SOFIE_COMMON
 #define TMVA_SOFIE_SOFIE_COMMON
 
-#include "TMVA/RTensor.hxx"
+//#include "RTensor.hxx"
 
 #include <type_traits>
 #include <cstdint>
@@ -73,7 +73,7 @@ ETensorType GetTemplatedType(T obj){
 
 namespace UTILITY{
 template<typename T>
-std::vector<T> Unidirectional_broadcast(const T* original_data, const std::vector<size_t> original_shape, const std::vector<size_t> target_shape);
+T* Unidirectional_broadcast(const T* original_data, const std::vector<size_t> original_shape, const std::vector<size_t> target_shape);
 std::string Clean_name(std::string input_tensor_name);
 }
 

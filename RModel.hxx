@@ -9,10 +9,10 @@
 #include <set>
 #include <iomanip>
 #include <fstream>
+#include <sstream>
 
 #include "SOFIE_common.hxx"
 #include "ROperator.hxx"
-
 
 namespace TMVA{
 namespace Experimental{
