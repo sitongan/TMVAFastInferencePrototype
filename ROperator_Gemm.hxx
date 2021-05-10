@@ -132,8 +132,6 @@ namespace SOFIE{
                if (fType == "float"){
 
                   std::shared_ptr<void> new_data_ptr(UTILITY::Unidirectional_broadcast<float>(static_cast<float*>(original_data.get()), fShapeC, fShapeY), std::default_delete<float[]>());
-
-
                   model.UpdateInitializedTensor(fNC, model.GetTensorType(fNC), fShapeY, new_data_ptr);
                   fShapeC = fShapeY;
                }
@@ -156,6 +154,23 @@ namespace SOFIE{
             throw std::runtime_error("TMVA SOFIE Gemm Op called to Generate without being initialized first");
          }
          std::stringstream out;
+
+         std::string fNA_t = fAttrTransA ? fNA + ".transpose()" : fNA;
+         std::string fNB_t = fAttrTransB ? fNB + ".transpose()" : fNB;
+
+         if (fUseEigen){
+            out <<"\t" << "Eigen::Map<Eigen::Matrix<float," << fShapeA[0] << "," << fShapeA[1] << ",Eigen::RowMajor>> em_" << fNA << "(tensor_" << fNA << ");\n";
+            out <<"\t" << "Eigen::Map<Eigen::Matrix<float," << fShapeB[0] << "," << fShapeB[1] << ",Eigen::RowMajor>> em_" << fNB << "(tensor_" << fNB << ");\n";
+            out <<"\t" << "Eigen::Map<Eigen::Matrix<float," << fShapeY[0] << "," << fShapeY[1] << ",Eigen::RowMajor>> em_" << fNY << "(tensor_" << fNY << ");\n";
+            if (fNC != ""){
+               out <<"\t" << "Eigen::Map<Eigen::Matrix<float," << fShapeC[0] << "," << fShapeC[1] << ",Eigen::RowMajor>> em_" << fNC << "(tensor_" << fNC << ");\n";
+               out <<"\t" << "em_" << fNY << " = em_" << fNA_t << " * em_" << fNB_t << " + em_" << fNC << ";\n";
+            }else{
+               out <<"\t" << "em_" << fNY << " = em_" << fNA_t << " * em_" << fNB_t << ";\n";
+            }
+
+         }else{
+
          out <<"\t" << "char " << OpName << "_transA = " << (fAttrTransA ? "\'t\'" : "\'n\'") << ";\n";
          out <<"\t" << "char " << OpName << "_transB = " << (fAttrTransB ? "\'t\'" : "\'n\'") << ";\n";
          int m = (fAttrTransA ? fShapeA[1] : fShapeA[0]);
@@ -180,9 +195,10 @@ namespace SOFIE{
              << "_n, &" << OpName << "_m, &" << OpName << "_k, &" << OpName << "_alpha, " << "tensor_" << fNB
              << ", &" << OpName << "_ldb, " << "tensor_" << fNA << ", &" << OpName << "_lda, &" << OpName << "_beta, " << "tensor_" << fNY << ", &"
              << OpName << "_n);\n";
-          }
+         }
 
-          return out.str();
+         }
+         return out.str();
 
          }
 

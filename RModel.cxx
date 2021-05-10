@@ -164,6 +164,7 @@ namespace SOFIE{
       for (auto& i: fNeededStdLib){
          fGC += "#include<" + i + ">\n";
       }
+      if (fUseEigen) fGC += "#include <Eigen/Dense>\n";
       fGC += ("namespace TMVA_SOFIE_" + fName + "{\n");
       if (fNeedGemm){
          fGC += ("namespace BLAS{\n"

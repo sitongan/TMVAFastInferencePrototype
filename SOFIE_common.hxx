@@ -14,6 +14,8 @@ namespace TMVA{
 namespace Experimental{
 namespace SOFIE{
 
+const bool fUseEigen = true;
+
 //typedef RTensor tensor_t;
 
 enum class ETensorType{

@@ -11,14 +11,19 @@ int main(){
 
 
    float a[6] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};    //2x3
-   float b[6] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};    //2x3
+   float b[6] = {1.0, 4.0, 2.0, 5.0, 3.0, 6.0};    //2x3
    //float c[6] = {0};
+
+   float c[6] = {0};
+   float d[4] = {10.0};
 
    using namespace Eigen;
    Map< Matrix<float, 2,3> > ma(a);
-   Map< Matrix<float, 3,2> > mb(b);
-   Matrix<float, 2, 2> mc;
-   mc = ma * mb;
+   Map< Matrix<float, 2,3> > mb(b);
+   //Matrix<float, 2, 2> mc;
+   Map< Matrix<float, 2,2> > mc(c);
+   Map< Matrix<float, 2,2> > md(d);
+   mc = ma * mb.transpose() + md;
    std::cout << mc << std::endl;
 
 
@@ -50,7 +55,8 @@ int main(){
 */
    std::cout << "[";
    for (int i = 0; i < 6; i++){
-      std::cout << mc.data()[i] << "\t";
+      //std::cout << mc.data()[i] << "\t";
+      std::cout << c[i] << "\t";
    }
    std::cout <<"]\n";
 

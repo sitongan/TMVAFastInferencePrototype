@@ -13,7 +13,7 @@ int main(){
 
 
    RModelParser_ONNX parser;
-   RModel model = parser.Parse("./Linear_64.onnx");
+   RModel model = parser.Parse("./LinearNN.onnx");
    RModel model2 = std::move(model);
    model2.PrintRequiredInputTensors();
    model2.PrintInitializedTensors();
