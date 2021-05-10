@@ -1,6 +1,7 @@
-//Code generated automatically by TMVA for Inference of Model file [Linear_4.onnx] at [Wed May  5 13:23:19 2021] 
+//Code generated automatically by TMVA for Inference of Model file [Linear_4.onnx] at [Mon May 10 13:16:25 2021] 
 #include<algorithm>
 #include<vector>
+#include <Eigen/Dense>
 namespace TMVA_SOFIE_Linear_4{
 namespace BLAS{
 	extern "C" void sgemm_(const char * transa, const char * transb, const int * m, const int * n, const int * k,
@@ -47,143 +48,83 @@ float tensor_38[200];
 float tensor_22[200];
 float tensor_21[200];
 std::vector<float> infer(float* tensor_input1){
-	char op_0_transA = 'n';
-	char op_0_transB = 't';
-	int op_0_m = 4;
-	int op_0_n = 50;
-	int op_0_k = 100;
-	float op_0_alpha = 1;
-	float op_0_beta = 1;
-	int op_0_lda = 100;
-	int op_0_ldb = 100;
-	std::copy(tensor_0bias, tensor_0bias + 200, tensor_21);
-	BLAS::sgemm_(&op_0_transB, &op_0_transA, &op_0_n, &op_0_m, &op_0_k, &op_0_alpha, tensor_0weight, &op_0_ldb, tensor_input1, &op_0_lda, &op_0_beta, tensor_21, &op_0_n);
+	Eigen::Map<Eigen::Matrix<float,4,100,Eigen::RowMajor>> em_input1(tensor_input1);
+	Eigen::Map<Eigen::Matrix<float,50,100,Eigen::RowMajor>> em_0weight(tensor_0weight);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_21(tensor_21);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_0bias(tensor_0bias);
+	em_21 = em_input1 * em_0weight.transpose() + em_0bias;
 	for (int id = 0; id < 200 ; id++){
 		tensor_22[id] = ((tensor_21[id] > 0 )? tensor_21[id] : 0);
 	}
-	char op_2_transA = 'n';
-	char op_2_transB = 't';
-	int op_2_m = 4;
-	int op_2_n = 50;
-	int op_2_k = 50;
-	float op_2_alpha = 1;
-	float op_2_beta = 1;
-	int op_2_lda = 50;
-	int op_2_ldb = 50;
-	std::copy(tensor_2bias, tensor_2bias + 200, tensor_23);
-	BLAS::sgemm_(&op_2_transB, &op_2_transA, &op_2_n, &op_2_m, &op_2_k, &op_2_alpha, tensor_2weight, &op_2_ldb, tensor_22, &op_2_lda, &op_2_beta, tensor_23, &op_2_n);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_22(tensor_22);
+	Eigen::Map<Eigen::Matrix<float,50,50,Eigen::RowMajor>> em_2weight(tensor_2weight);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_23(tensor_23);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_2bias(tensor_2bias);
+	em_23 = em_22 * em_2weight.transpose() + em_2bias;
 	for (int id = 0; id < 200 ; id++){
 		tensor_24[id] = ((tensor_23[id] > 0 )? tensor_23[id] : 0);
 	}
-	char op_4_transA = 'n';
-	char op_4_transB = 't';
-	int op_4_m = 4;
-	int op_4_n = 50;
-	int op_4_k = 50;
-	float op_4_alpha = 1;
-	float op_4_beta = 1;
-	int op_4_lda = 50;
-	int op_4_ldb = 50;
-	std::copy(tensor_4bias, tensor_4bias + 200, tensor_25);
-	BLAS::sgemm_(&op_4_transB, &op_4_transA, &op_4_n, &op_4_m, &op_4_k, &op_4_alpha, tensor_4weight, &op_4_ldb, tensor_24, &op_4_lda, &op_4_beta, tensor_25, &op_4_n);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_24(tensor_24);
+	Eigen::Map<Eigen::Matrix<float,50,50,Eigen::RowMajor>> em_4weight(tensor_4weight);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_25(tensor_25);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_4bias(tensor_4bias);
+	em_25 = em_24 * em_4weight.transpose() + em_4bias;
 	for (int id = 0; id < 200 ; id++){
 		tensor_26[id] = ((tensor_25[id] > 0 )? tensor_25[id] : 0);
 	}
-	char op_6_transA = 'n';
-	char op_6_transB = 't';
-	int op_6_m = 4;
-	int op_6_n = 50;
-	int op_6_k = 50;
-	float op_6_alpha = 1;
-	float op_6_beta = 1;
-	int op_6_lda = 50;
-	int op_6_ldb = 50;
-	std::copy(tensor_6bias, tensor_6bias + 200, tensor_27);
-	BLAS::sgemm_(&op_6_transB, &op_6_transA, &op_6_n, &op_6_m, &op_6_k, &op_6_alpha, tensor_6weight, &op_6_ldb, tensor_26, &op_6_lda, &op_6_beta, tensor_27, &op_6_n);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_26(tensor_26);
+	Eigen::Map<Eigen::Matrix<float,50,50,Eigen::RowMajor>> em_6weight(tensor_6weight);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_27(tensor_27);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_6bias(tensor_6bias);
+	em_27 = em_26 * em_6weight.transpose() + em_6bias;
 	for (int id = 0; id < 200 ; id++){
 		tensor_28[id] = ((tensor_27[id] > 0 )? tensor_27[id] : 0);
 	}
-	char op_8_transA = 'n';
-	char op_8_transB = 't';
-	int op_8_m = 4;
-	int op_8_n = 50;
-	int op_8_k = 50;
-	float op_8_alpha = 1;
-	float op_8_beta = 1;
-	int op_8_lda = 50;
-	int op_8_ldb = 50;
-	std::copy(tensor_8bias, tensor_8bias + 200, tensor_29);
-	BLAS::sgemm_(&op_8_transB, &op_8_transA, &op_8_n, &op_8_m, &op_8_k, &op_8_alpha, tensor_8weight, &op_8_ldb, tensor_28, &op_8_lda, &op_8_beta, tensor_29, &op_8_n);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_28(tensor_28);
+	Eigen::Map<Eigen::Matrix<float,50,50,Eigen::RowMajor>> em_8weight(tensor_8weight);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_29(tensor_29);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_8bias(tensor_8bias);
+	em_29 = em_28 * em_8weight.transpose() + em_8bias;
 	for (int id = 0; id < 200 ; id++){
 		tensor_30[id] = ((tensor_29[id] > 0 )? tensor_29[id] : 0);
 	}
-	char op_10_transA = 'n';
-	char op_10_transB = 't';
-	int op_10_m = 4;
-	int op_10_n = 50;
-	int op_10_k = 50;
-	float op_10_alpha = 1;
-	float op_10_beta = 1;
-	int op_10_lda = 50;
-	int op_10_ldb = 50;
-	std::copy(tensor_10bias, tensor_10bias + 200, tensor_31);
-	BLAS::sgemm_(&op_10_transB, &op_10_transA, &op_10_n, &op_10_m, &op_10_k, &op_10_alpha, tensor_10weight, &op_10_ldb, tensor_30, &op_10_lda, &op_10_beta, tensor_31, &op_10_n);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_30(tensor_30);
+	Eigen::Map<Eigen::Matrix<float,50,50,Eigen::RowMajor>> em_10weight(tensor_10weight);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_31(tensor_31);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_10bias(tensor_10bias);
+	em_31 = em_30 * em_10weight.transpose() + em_10bias;
 	for (int id = 0; id < 200 ; id++){
 		tensor_32[id] = ((tensor_31[id] > 0 )? tensor_31[id] : 0);
 	}
-	char op_12_transA = 'n';
-	char op_12_transB = 't';
-	int op_12_m = 4;
-	int op_12_n = 50;
-	int op_12_k = 50;
-	float op_12_alpha = 1;
-	float op_12_beta = 1;
-	int op_12_lda = 50;
-	int op_12_ldb = 50;
-	std::copy(tensor_12bias, tensor_12bias + 200, tensor_33);
-	BLAS::sgemm_(&op_12_transB, &op_12_transA, &op_12_n, &op_12_m, &op_12_k, &op_12_alpha, tensor_12weight, &op_12_ldb, tensor_32, &op_12_lda, &op_12_beta, tensor_33, &op_12_n);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_32(tensor_32);
+	Eigen::Map<Eigen::Matrix<float,50,50,Eigen::RowMajor>> em_12weight(tensor_12weight);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_33(tensor_33);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_12bias(tensor_12bias);
+	em_33 = em_32 * em_12weight.transpose() + em_12bias;
 	for (int id = 0; id < 200 ; id++){
 		tensor_34[id] = ((tensor_33[id] > 0 )? tensor_33[id] : 0);
 	}
-	char op_14_transA = 'n';
-	char op_14_transB = 't';
-	int op_14_m = 4;
-	int op_14_n = 50;
-	int op_14_k = 50;
-	float op_14_alpha = 1;
-	float op_14_beta = 1;
-	int op_14_lda = 50;
-	int op_14_ldb = 50;
-	std::copy(tensor_14bias, tensor_14bias + 200, tensor_35);
-	BLAS::sgemm_(&op_14_transB, &op_14_transA, &op_14_n, &op_14_m, &op_14_k, &op_14_alpha, tensor_14weight, &op_14_ldb, tensor_34, &op_14_lda, &op_14_beta, tensor_35, &op_14_n);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_34(tensor_34);
+	Eigen::Map<Eigen::Matrix<float,50,50,Eigen::RowMajor>> em_14weight(tensor_14weight);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_35(tensor_35);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_14bias(tensor_14bias);
+	em_35 = em_34 * em_14weight.transpose() + em_14bias;
 	for (int id = 0; id < 200 ; id++){
 		tensor_36[id] = ((tensor_35[id] > 0 )? tensor_35[id] : 0);
 	}
-	char op_16_transA = 'n';
-	char op_16_transB = 't';
-	int op_16_m = 4;
-	int op_16_n = 50;
-	int op_16_k = 50;
-	float op_16_alpha = 1;
-	float op_16_beta = 1;
-	int op_16_lda = 50;
-	int op_16_ldb = 50;
-	std::copy(tensor_16bias, tensor_16bias + 200, tensor_37);
-	BLAS::sgemm_(&op_16_transB, &op_16_transA, &op_16_n, &op_16_m, &op_16_k, &op_16_alpha, tensor_16weight, &op_16_ldb, tensor_36, &op_16_lda, &op_16_beta, tensor_37, &op_16_n);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_36(tensor_36);
+	Eigen::Map<Eigen::Matrix<float,50,50,Eigen::RowMajor>> em_16weight(tensor_16weight);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_37(tensor_37);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_16bias(tensor_16bias);
+	em_37 = em_36 * em_16weight.transpose() + em_16bias;
 	for (int id = 0; id < 200 ; id++){
 		tensor_38[id] = ((tensor_37[id] > 0 )? tensor_37[id] : 0);
 	}
-	char op_18_transA = 'n';
-	char op_18_transB = 't';
-	int op_18_m = 4;
-	int op_18_n = 10;
-	int op_18_k = 50;
-	float op_18_alpha = 1;
-	float op_18_beta = 1;
-	int op_18_lda = 50;
-	int op_18_ldb = 50;
-	std::copy(tensor_18bias, tensor_18bias + 40, tensor_39);
-	BLAS::sgemm_(&op_18_transB, &op_18_transA, &op_18_n, &op_18_m, &op_18_k, &op_18_alpha, tensor_18weight, &op_18_ldb, tensor_38, &op_18_lda, &op_18_beta, tensor_39, &op_18_n);
+	Eigen::Map<Eigen::Matrix<float,4,50,Eigen::RowMajor>> em_38(tensor_38);
+	Eigen::Map<Eigen::Matrix<float,10,50,Eigen::RowMajor>> em_18weight(tensor_18weight);
+	Eigen::Map<Eigen::Matrix<float,4,10,Eigen::RowMajor>> em_39(tensor_39);
+	Eigen::Map<Eigen::Matrix<float,4,10,Eigen::RowMajor>> em_18bias(tensor_18bias);
+	em_39 = em_38 * em_18weight.transpose() + em_18bias;
 	std::vector<float> ret (tensor_39, tensor_39 + sizeof(tensor_39) / sizeof(tensor_39[0]));
 	return ret;
 }

@@ -1,6 +1,7 @@
 
 
-// g++ -I ./eigen/ gemm_eigen.cpp -o gemm_eigen
+// g++ -I ./eigen/ gemm_eigen.cpp -o gemm_eigen -std=c++14
+
 
 
 #include <iostream>
@@ -10,23 +11,28 @@
 int main(){
 
 
-   float a[6] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};    //2x3
-   float b[6] = {1.0, 4.0, 2.0, 5.0, 3.0, 6.0};    //2x3
+   float a[7] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0};    //2x3
+   //float b[6] = {1.0, 4.0, 2.0, 5.0, 3.0, 6.0};    //2x3
    //float c[6] = {0};
-
+   float b[42] = {1.0};
    float c[6] = {0};
-   float d[4] = {10.0};
+   float d[6] = {10.0};
 
-   using namespace Eigen;
-   Map< Matrix<float, 2,3> > ma(a);
-   Map< Matrix<float, 2,3> > mb(b);
+
+   //Map< Matrix<float, 2,3> > ma(a);
+   //Map< Matrix<float, 2,3> > mb(b);
    //Matrix<float, 2, 2> mc;
-   Map< Matrix<float, 2,2> > mc(c);
-   Map< Matrix<float, 2,2> > md(d);
-   mc = ma * mb.transpose() + md;
-   std::cout << mc << std::endl;
+   //Map< Matrix<float, 2,2> > mc(c);
+   //Map< Matrix<float, 2,2> > md(d);
+   //mc = ma * mb.transpose() + md;
+   //std::cout << mc << std::endl;
 
-
+   Eigen::Map< Eigen::Vector<float,7> > va(a);
+   Eigen::Map< Eigen::Matrix<float,6,7> > vb(b);
+   Eigen::Map< Eigen::Vector<float,6> > vd(d);
+   Eigen::Map< Eigen::Vector<float,6> > vc(c);
+   vc = (va.transpose() * vb.transpose()).transpose() + vd;
+   std::cout << vc << std::endl;
 /*
 
 

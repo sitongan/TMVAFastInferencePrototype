@@ -1,4 +1,4 @@
-//Code generated automatically by TMVA for Inference of Model file [Linear_64.onnx] at [Sun May  9 19:23:04 2021] 
+//Code generated automatically by TMVA for Inference of Model file [Linear_64.onnx] at [Mon May 10 13:28:22 2021] 
 #include<algorithm>
 #include<vector>
 #include <Eigen/Dense>
@@ -48,83 +48,83 @@ float tensor_38[3200];
 float tensor_22[3200];
 float tensor_21[3200];
 std::vector<float> infer(float* tensor_input1){
-	Eigen::Map<Matrix<64,100>> em_input1(input1);
-	Eigen::Map<Matrix<50,100>> em_0weight(0weight);
-	Eigen::Map<Matrix<64,50>> em_21(0weight);
-	Eigen::Map<Matrix<64,50>> em_0bias(0bias);
-	em_21 = em_input1 * em_0weight + em_0bias;
+	Eigen::Map<Eigen::Matrix<float,64,100,Eigen::RowMajor>> em_input1(tensor_input1);
+	Eigen::Map<Eigen::Matrix<float,50,100,Eigen::RowMajor>> em_0weight(tensor_0weight);
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_21(tensor_21);
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_0bias(tensor_0bias);
+	em_21 = em_input1 * em_0weight.transpose() + em_0bias;
 	for (int id = 0; id < 3200 ; id++){
 		tensor_22[id] = ((tensor_21[id] > 0 )? tensor_21[id] : 0);
 	}
-	Eigen::Map<Matrix<64,50>> em_22(22);
-	Eigen::Map<Matrix<50,50>> em_2weight(2weight);
-	Eigen::Map<Matrix<64,50>> em_23(2weight);
-	Eigen::Map<Matrix<64,50>> em_2bias(2bias);
-	em_23 = em_22 * em_2weight + em_2bias;
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_22(tensor_22);
+	Eigen::Map<Eigen::Matrix<float,50,50,Eigen::RowMajor>> em_2weight(tensor_2weight);
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_23(tensor_23);
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_2bias(tensor_2bias);
+	em_23 = em_22 * em_2weight.transpose() + em_2bias;
 	for (int id = 0; id < 3200 ; id++){
 		tensor_24[id] = ((tensor_23[id] > 0 )? tensor_23[id] : 0);
 	}
-	Eigen::Map<Matrix<64,50>> em_24(24);
-	Eigen::Map<Matrix<50,50>> em_4weight(4weight);
-	Eigen::Map<Matrix<64,50>> em_25(4weight);
-	Eigen::Map<Matrix<64,50>> em_4bias(4bias);
-	em_25 = em_24 * em_4weight + em_4bias;
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_24(tensor_24);
+	Eigen::Map<Eigen::Matrix<float,50,50,Eigen::RowMajor>> em_4weight(tensor_4weight);
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_25(tensor_25);
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_4bias(tensor_4bias);
+	em_25 = em_24 * em_4weight.transpose() + em_4bias;
 	for (int id = 0; id < 3200 ; id++){
 		tensor_26[id] = ((tensor_25[id] > 0 )? tensor_25[id] : 0);
 	}
-	Eigen::Map<Matrix<64,50>> em_26(26);
-	Eigen::Map<Matrix<50,50>> em_6weight(6weight);
-	Eigen::Map<Matrix<64,50>> em_27(6weight);
-	Eigen::Map<Matrix<64,50>> em_6bias(6bias);
-	em_27 = em_26 * em_6weight + em_6bias;
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_26(tensor_26);
+	Eigen::Map<Eigen::Matrix<float,50,50,Eigen::RowMajor>> em_6weight(tensor_6weight);
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_27(tensor_27);
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_6bias(tensor_6bias);
+	em_27 = em_26 * em_6weight.transpose() + em_6bias;
 	for (int id = 0; id < 3200 ; id++){
 		tensor_28[id] = ((tensor_27[id] > 0 )? tensor_27[id] : 0);
 	}
-	Eigen::Map<Matrix<64,50>> em_28(28);
-	Eigen::Map<Matrix<50,50>> em_8weight(8weight);
-	Eigen::Map<Matrix<64,50>> em_29(8weight);
-	Eigen::Map<Matrix<64,50>> em_8bias(8bias);
-	em_29 = em_28 * em_8weight + em_8bias;
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_28(tensor_28);
+	Eigen::Map<Eigen::Matrix<float,50,50,Eigen::RowMajor>> em_8weight(tensor_8weight);
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_29(tensor_29);
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_8bias(tensor_8bias);
+	em_29 = em_28 * em_8weight.transpose() + em_8bias;
 	for (int id = 0; id < 3200 ; id++){
 		tensor_30[id] = ((tensor_29[id] > 0 )? tensor_29[id] : 0);
 	}
-	Eigen::Map<Matrix<64,50>> em_30(30);
-	Eigen::Map<Matrix<50,50>> em_10weight(10weight);
-	Eigen::Map<Matrix<64,50>> em_31(10weight);
-	Eigen::Map<Matrix<64,50>> em_10bias(10bias);
-	em_31 = em_30 * em_10weight + em_10bias;
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_30(tensor_30);
+	Eigen::Map<Eigen::Matrix<float,50,50,Eigen::RowMajor>> em_10weight(tensor_10weight);
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_31(tensor_31);
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_10bias(tensor_10bias);
+	em_31 = em_30 * em_10weight.transpose() + em_10bias;
 	for (int id = 0; id < 3200 ; id++){
 		tensor_32[id] = ((tensor_31[id] > 0 )? tensor_31[id] : 0);
 	}
-	Eigen::Map<Matrix<64,50>> em_32(32);
-	Eigen::Map<Matrix<50,50>> em_12weight(12weight);
-	Eigen::Map<Matrix<64,50>> em_33(12weight);
-	Eigen::Map<Matrix<64,50>> em_12bias(12bias);
-	em_33 = em_32 * em_12weight + em_12bias;
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_32(tensor_32);
+	Eigen::Map<Eigen::Matrix<float,50,50,Eigen::RowMajor>> em_12weight(tensor_12weight);
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_33(tensor_33);
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_12bias(tensor_12bias);
+	em_33 = em_32 * em_12weight.transpose() + em_12bias;
 	for (int id = 0; id < 3200 ; id++){
 		tensor_34[id] = ((tensor_33[id] > 0 )? tensor_33[id] : 0);
 	}
-	Eigen::Map<Matrix<64,50>> em_34(34);
-	Eigen::Map<Matrix<50,50>> em_14weight(14weight);
-	Eigen::Map<Matrix<64,50>> em_35(14weight);
-	Eigen::Map<Matrix<64,50>> em_14bias(14bias);
-	em_35 = em_34 * em_14weight + em_14bias;
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_34(tensor_34);
+	Eigen::Map<Eigen::Matrix<float,50,50,Eigen::RowMajor>> em_14weight(tensor_14weight);
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_35(tensor_35);
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_14bias(tensor_14bias);
+	em_35 = em_34 * em_14weight.transpose() + em_14bias;
 	for (int id = 0; id < 3200 ; id++){
 		tensor_36[id] = ((tensor_35[id] > 0 )? tensor_35[id] : 0);
 	}
-	Eigen::Map<Matrix<64,50>> em_36(36);
-	Eigen::Map<Matrix<50,50>> em_16weight(16weight);
-	Eigen::Map<Matrix<64,50>> em_37(16weight);
-	Eigen::Map<Matrix<64,50>> em_16bias(16bias);
-	em_37 = em_36 * em_16weight + em_16bias;
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_36(tensor_36);
+	Eigen::Map<Eigen::Matrix<float,50,50,Eigen::RowMajor>> em_16weight(tensor_16weight);
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_37(tensor_37);
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_16bias(tensor_16bias);
+	em_37 = em_36 * em_16weight.transpose() + em_16bias;
 	for (int id = 0; id < 3200 ; id++){
 		tensor_38[id] = ((tensor_37[id] > 0 )? tensor_37[id] : 0);
 	}
-	Eigen::Map<Matrix<64,50>> em_38(38);
-	Eigen::Map<Matrix<10,50>> em_18weight(18weight);
-	Eigen::Map<Matrix<64,10>> em_39(18weight);
-	Eigen::Map<Matrix<64,10>> em_18bias(18bias);
-	em_39 = em_38 * em_18weight + em_18bias;
+	Eigen::Map<Eigen::Matrix<float,64,50,Eigen::RowMajor>> em_38(tensor_38);
+	Eigen::Map<Eigen::Matrix<float,10,50,Eigen::RowMajor>> em_18weight(tensor_18weight);
+	Eigen::Map<Eigen::Matrix<float,64,10,Eigen::RowMajor>> em_39(tensor_39);
+	Eigen::Map<Eigen::Matrix<float,64,10,Eigen::RowMajor>> em_18bias(tensor_18bias);
+	em_39 = em_38 * em_18weight.transpose() + em_18bias;
 	std::vector<float> ret (tensor_39, tensor_39 + sizeof(tensor_39) / sizeof(tensor_39[0]));
 	return ret;
 }

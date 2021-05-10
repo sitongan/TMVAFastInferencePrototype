@@ -155,19 +155,61 @@ namespace SOFIE{
          }
          std::stringstream out;
 
-         std::string fNA_t = fAttrTransA ? fNA + ".transpose()" : fNA;
-         std::string fNB_t = fAttrTransB ? fNB + ".transpose()" : fNB;
+
 
          if (fUseEigen){
-            out <<"\t" << "Eigen::Map<Eigen::Matrix<float," << fShapeA[0] << "," << fShapeA[1] << ",Eigen::RowMajor>> em_" << fNA << "(tensor_" << fNA << ");\n";
-            out <<"\t" << "Eigen::Map<Eigen::Matrix<float," << fShapeB[0] << "," << fShapeB[1] << ",Eigen::RowMajor>> em_" << fNB << "(tensor_" << fNB << ");\n";
-            out <<"\t" << "Eigen::Map<Eigen::Matrix<float," << fShapeY[0] << "," << fShapeY[1] << ",Eigen::RowMajor>> em_" << fNY << "(tensor_" << fNY << ");\n";
-            if (fNC != ""){
-               out <<"\t" << "Eigen::Map<Eigen::Matrix<float," << fShapeC[0] << "," << fShapeC[1] << ",Eigen::RowMajor>> em_" << fNC << "(tensor_" << fNC << ");\n";
-               out <<"\t" << "em_" << fNY << " = em_" << fNA_t << " * em_" << fNB_t << " + em_" << fNC << ";\n";
+
+            if (fShapeA[0] == 1){
+               out <<"\t" << "Eigen::Map<Eigen::Vector<float," << fShapeA[1] << ">> em_" << fNA << "(tensor_" << fNA << ");\n";
+            }else if (fShapeA[1] == 1){
+               out <<"\t" << "Eigen::Map<Eigen::Vector<float," << fShapeA[0] << ">> em_" << fNA << "(tensor_" << fNA << ");\n";
             }else{
-               out <<"\t" << "em_" << fNY << " = em_" << fNA_t << " * em_" << fNB_t << ";\n";
+               out <<"\t" << "Eigen::Map<Eigen::Matrix<float," << fShapeA[0] << "," << fShapeA[1] << ",Eigen::RowMajor>> em_" << fNA << "(tensor_" << fNA << ");\n";
             }
+
+            if (fShapeB[0] == 1){
+               out <<"\t" << "Eigen::Map<Eigen::Vector<float," << fShapeB[1] << ">> em_" << fNB << "(tensor_" << fNB << ");\n";
+            }else if (fShapeB[1] == 1){
+               out <<"\t" << "Eigen::Map<Eigen::Vector<float," << fShapeB[0] << ">> em_" << fNB << "(tensor_" << fNB << ");\n";
+            }else{
+               out <<"\t" << "Eigen::Map<Eigen::Matrix<float," << fShapeB[0] << "," << fShapeB[1] << ",Eigen::RowMajor>> em_" << fNB << "(tensor_" << fNB << ");\n";
+            }
+
+            if (fShapeY[0] == 1){
+               out <<"\t" << "Eigen::Map<Eigen::Vector<float," << fShapeY[1] << ">> em_" << fNY << "(tensor_" << fNY << ");\n";
+            }else if (fShapeY[1] == 1){
+               out <<"\t" << "Eigen::Map<Eigen::Vector<float," << fShapeY[0] << ">> em_" << fNY << "(tensor_" << fNY << ");\n";
+            }else{
+               out <<"\t" << "Eigen::Map<Eigen::Matrix<float," << fShapeY[0] << "," << fShapeY[1] << ",Eigen::RowMajor>> em_" << fNY << "(tensor_" << fNY << ");\n";
+            }
+
+            if (fShapeA[0] == 1 || fShapeA[1] == 1) fAttrTransA = 1;
+            if (fShapeB[0] == 1 || fShapeB[1] == 1) fAttrTransA = 0;
+
+            std::string fNA_t = fAttrTransA ? fNA + ".transpose()" : fNA;
+            std::string fNB_t = fAttrTransB ? fNB + ".transpose()" : fNB;
+
+            bool fTransposeTrickPossible;
+            if (fAttrTransA && fAttrTransB && (fShapeA[0] == 1 || fShapeA[1] == 1)) fTransposeTrickPossible = true;
+            //(A^T * B^T)^T. This happens when A is a vector (batchsize 1), and B is asked to be transposed by hyperparameter from model.
+
+            if (fNC != ""){
+               if (fShapeC[0] == 1){
+                  out <<"\t" << "Eigen::Map<Eigen::Vector<float," << fShapeC[1] << ">> em_" << fNC << "(tensor_" << fNC << ");\n";
+               }else if (fShapeC[1] == 1){
+                  out <<"\t" << "Eigen::Map<Eigen::Vector<float," << fShapeC[0] << ">> em_" << fNC << "(tensor_" << fNC << ");\n";
+               }else{
+                  out <<"\t" << "Eigen::Map<Eigen::Matrix<float," << fShapeC[0] << "," << fShapeC[1] << ",Eigen::RowMajor>> em_" << fNC << "(tensor_" << fNC << ");\n";
+               }
+            }
+
+            if (!fTransposeTrickPossible){
+               out << "\t" << "em_" << fNY << " = em_" << fNA_t << " * em_" << fNB_t;
+            }else{
+               out << "\t" << "em_" << fNY << " = em_" << fNB << " * em_" << fNA;
+            }
+            if (fNC != "") out << "+ em_" << fNC;
+            out << " ;\n";
 
          }else{
 
