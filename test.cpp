@@ -42,13 +42,12 @@ for (int k = 0; k < n; ++k ) {
    auto out = TMVA_SOFIE_Linear_event::infer(inputss[k]);
    auto t2 = std::chrono::high_resolution_clock::now();
    total_time.push_back(float(std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count()));
-
-
 }
 
    //for (auto& i: out){
       //std::cout << i << ",";
    //}
+
    float sum = std::accumulate(total_time.begin(), total_time.end(), 0.0);
    float mean = sum / total_time.size();
 
