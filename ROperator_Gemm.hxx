@@ -155,10 +155,52 @@ namespace SOFIE{
          }
          std::stringstream out;
 
-
+         int f_m = (fAttrTransA ? fShapeA[1] : fShapeA[0]);
+         int f_n = (fAttrTransB ? fShapeB[0] : fShapeB[1]);
+         int f_k = (fAttrTransA ? fShapeA[0] : fShapeA[1]);
 
 
          if (fUseEigen){
+
+            if (f_n == 1){
+               out <<"\t" << "Eigen::Map<Eigen::Vector<float," << f_k << ">> em_" << fNB << "(tensor_" << fNB << ");\n";
+            }else{
+               out <<"\t" << "Eigen::Map<Eigen::Matrix<float," << fShapeB[0] << "," << fShapeB[1] << ",Eigen::RowMajor>> em_" << fNB << "(tensor_" << fNB << ");\n";
+            }
+            if (f_m == 1){
+               out <<"\t" << "Eigen::Map<Eigen::Vector<float," << f_k << ">> em_" << fNA << "(tensor_" << fNA << ");\n";
+               fAttrTransB = 1 - fAttrTransB;
+            }else{
+               out <<"\t" << "Eigen::Map<Eigen::Matrix<float," << fShapeB[0] << "," << fShapeB[1] << ",Eigen::RowMajor>> em_" << fNB << "(tensor_" << fNB << ");\n";
+            }
+            if (fShapeY[0] == 1){
+               out <<"\t" << "Eigen::Map<Eigen::Vector<float," << fShapeY[1] << ">> em_" << fNY << "(tensor_" << fNY << ");\n";
+            }else if (fShapeY[1] == 1){
+               out <<"\t" << "Eigen::Map<Eigen::Vector<float," << fShapeY[0] << ">> em_" << fNY << "(tensor_" << fNY << ");\n";
+            }else{
+               out <<"\t" << "Eigen::Map<Eigen::Matrix<float," << fShapeY[0] << "," << fShapeY[1] << ",Eigen::RowMajor>> em_" << fNY << "(tensor_" << fNY << ");\n";
+            }
+
+            if (fNC != ""){
+               if (fShapeC[0] == 1){
+                  out <<"\t" << "Eigen::Map<Eigen::Vector<float," << fShapeC[1] << ">> em_" << fNC << "(tensor_" << fNC << ");\n";
+               }else if (fShapeC[1] == 1){
+                  out <<"\t" << "Eigen::Map<Eigen::Vector<float," << fShapeC[0] << ">> em_" << fNC << "(tensor_" << fNC << ");\n";
+               }else{
+                  out <<"\t" << "Eigen::Map<Eigen::Matrix<float," << fShapeC[0] << "," << fShapeC[1] << ",Eigen::RowMajor>> em_" << fNC << "(tensor_" << fNC << ");\n";
+               }
+            }
+
+            if (f_m == 1){
+               out << "\t" << "em_" << fNY << " = em_" << fNB << " * em_" << fNA;
+            }else{
+               out << "\t" << "em_" << fNY << " = em_" << fNA << " * em_" << fNB;
+            }
+
+            if (fNC != "") out << "+ em_" << fNC;
+            out << " ;\n";
+
+            /*
 
             if (fShapeA[0] == 1){
                out <<"\t" << "Eigen::Map<Eigen::Vector<float," << fShapeA[1] << ">> em_" << fNA << "(tensor_" << fNA << ");\n";
@@ -168,7 +210,7 @@ namespace SOFIE{
                out <<"\t" << "Eigen::Map<Eigen::Matrix<float," << fShapeA[0] << "," << fShapeA[1] << ",Eigen::RowMajor>> em_" << fNA << "(tensor_" << fNA << ");\n";
             }
 
-            if (fShapeB[0] == 1){
+            if (fShapeB[0] == 1 && fAttrTransB == 1){
                out <<"\t" << "Eigen::Map<Eigen::Vector<float," << fShapeB[1] << ">> em_" << fNB << "(tensor_" << fNB << ");\n";
             }else if (fShapeB[1] == 1){
                out <<"\t" << "Eigen::Map<Eigen::Vector<float," << fShapeB[0] << ">> em_" << fNB << "(tensor_" << fNB << ");\n";
@@ -184,24 +226,15 @@ namespace SOFIE{
                out <<"\t" << "Eigen::Map<Eigen::Matrix<float," << fShapeY[0] << "," << fShapeY[1] << ",Eigen::RowMajor>> em_" << fNY << "(tensor_" << fNY << ");\n";
             }
 
+
             if (fShapeA[0] == 1 || fShapeA[1] == 1) fAttrTransA = 1;
             if (fShapeB[0] == 1 || fShapeB[1] == 1) fAttrTransA = 0;
             bool fTransposeTrickPossible;
             if (fAttrTransA && fAttrTransB && (fShapeA[0] == 1 || fShapeA[1] == 1)) fTransposeTrickPossible = true;
             //(A^T * B^T)^T. This happens when A is a vector (batchsize 1), and B is asked to be transposed by hyperparameter from model.
-            
+
             std::string fNA_t = fAttrTransA ? fNA + ".transpose()" : fNA;
             std::string fNB_t = fAttrTransB ? fNB + ".transpose()" : fNB;
-
-            if (fNC != ""){
-               if (fShapeC[0] == 1){
-                  out <<"\t" << "Eigen::Map<Eigen::Vector<float," << fShapeC[1] << ">> em_" << fNC << "(tensor_" << fNC << ");\n";
-               }else if (fShapeC[1] == 1){
-                  out <<"\t" << "Eigen::Map<Eigen::Vector<float," << fShapeC[0] << ">> em_" << fNC << "(tensor_" << fNC << ");\n";
-               }else{
-                  out <<"\t" << "Eigen::Map<Eigen::Matrix<float," << fShapeC[0] << "," << fShapeC[1] << ",Eigen::RowMajor>> em_" << fNC << "(tensor_" << fNC << ");\n";
-               }
-            }
 
             if (!fTransposeTrickPossible){
                out << "\t" << "em_" << fNY << " = em_" << fNA_t << " * em_" << fNB_t;
@@ -210,6 +243,8 @@ namespace SOFIE{
             }
             if (fNC != "") out << "+ em_" << fNC;
             out << " ;\n";
+            */
+
 
          }else{
 
