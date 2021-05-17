@@ -171,7 +171,10 @@ namespace SOFIE{
          "\textern \"C\" void sgemm_(const char * transa, const char * transb, const int * m, const int * n, const int * k,\n"
          "\t                       const float * alpha, const float * A, const int * lda, const float * B, const int * ldb,\n"
          "\t                       const float * beta, float * C, const int * ldc);\n"
+         "\textern \"C\" void sgemv_(const char * trans, const int * m, const int * n, const float * alpha, const float * A,\n"
+         "\t                       const int * lda, const float * X, const int * incx, const float * beta, const float * Y, const int * incy);\n"
          "}//BLAS\n");
+
 
       for (auto& i: fInitializedTensors){
          if (i.second.type == ETensorType::FLOAT){

@@ -200,80 +200,77 @@ namespace SOFIE{
             if (fNC != "") out << "+ em_" << fNC;
             out << " ;\n";
 
-            /*
-
-            if (fShapeA[0] == 1){
-               out <<"\t" << "Eigen::Map<Eigen::Vector<float," << fShapeA[1] << ">> em_" << fNA << "(tensor_" << fNA << ");\n";
-            }else if (fShapeA[1] == 1){
-               out <<"\t" << "Eigen::Map<Eigen::Vector<float," << fShapeA[0] << ">> em_" << fNA << "(tensor_" << fNA << ");\n";
-            }else{
-               out <<"\t" << "Eigen::Map<Eigen::Matrix<float," << fShapeA[0] << "," << fShapeA[1] << ",Eigen::RowMajor>> em_" << fNA << "(tensor_" << fNA << ");\n";
-            }
-
-            if (fShapeB[0] == 1 && fAttrTransB == 1){
-               out <<"\t" << "Eigen::Map<Eigen::Vector<float," << fShapeB[1] << ">> em_" << fNB << "(tensor_" << fNB << ");\n";
-            }else if (fShapeB[1] == 1){
-               out <<"\t" << "Eigen::Map<Eigen::Vector<float," << fShapeB[0] << ">> em_" << fNB << "(tensor_" << fNB << ");\n";
-            }else{
-               out <<"\t" << "Eigen::Map<Eigen::Matrix<float," << fShapeB[0] << "," << fShapeB[1] << ",Eigen::RowMajor>> em_" << fNB << "(tensor_" << fNB << ");\n";
-            }
-
-            if (fShapeY[0] == 1){
-               out <<"\t" << "Eigen::Map<Eigen::Vector<float," << fShapeY[1] << ">> em_" << fNY << "(tensor_" << fNY << ");\n";
-            }else if (fShapeY[1] == 1){
-               out <<"\t" << "Eigen::Map<Eigen::Vector<float," << fShapeY[0] << ">> em_" << fNY << "(tensor_" << fNY << ");\n";
-            }else{
-               out <<"\t" << "Eigen::Map<Eigen::Matrix<float," << fShapeY[0] << "," << fShapeY[1] << ",Eigen::RowMajor>> em_" << fNY << "(tensor_" << fNY << ");\n";
-            }
-
-
-            if (fShapeA[0] == 1 || fShapeA[1] == 1) fAttrTransA = 1;
-            if (fShapeB[0] == 1 || fShapeB[1] == 1) fAttrTransA = 0;
-            bool fTransposeTrickPossible;
-            if (fAttrTransA && fAttrTransB && (fShapeA[0] == 1 || fShapeA[1] == 1)) fTransposeTrickPossible = true;
-            //(A^T * B^T)^T. This happens when A is a vector (batchsize 1), and B is asked to be transposed by hyperparameter from model.
-
-            std::string fNA_t = fAttrTransA ? fNA + ".transpose()" : fNA;
-            std::string fNB_t = fAttrTransB ? fNB + ".transpose()" : fNB;
-
-            if (!fTransposeTrickPossible){
-               out << "\t" << "em_" << fNY << " = em_" << fNA_t << " * em_" << fNB_t;
-            }else{
-               out << "\t" << "em_" << fNY << " = em_" << fNB << " * em_" << fNA;
-            }
-            if (fNC != "") out << "+ em_" << fNC;
-            out << " ;\n";
-            */
-
-
          }else{
 
-
-
-            out <<"\t" << "char " << OpName << "_transA = " << (fAttrTransA ? "\'t\'" : "\'n\'") << ";\n";
-            out <<"\t" << "char " << OpName << "_transB = " << (fAttrTransB ? "\'t\'" : "\'n\'") << ";\n";
-            int m = (fAttrTransA ? fShapeA[1] : fShapeA[0]);
-            int n = (fAttrTransB ? fShapeB[0] : fShapeB[1]);
-            int k = (fAttrTransA ? fShapeA[0] : fShapeA[1]);
-            out <<"\t" << "int " << OpName << "_m = " << m << ";\n";
-            out <<"\t" << "int " << OpName << "_n = " << n << ";\n";
-            out <<"\t" << "int " << OpName << "_k = " << k << ";\n";
             out <<"\t" << "float " << OpName << "_alpha = " << std::setprecision(std::numeric_limits<float>::max_digits10) << fAttrAlpha << ";\n";
             out <<"\t" << "float " << OpName << "_beta = " << std::setprecision(std::numeric_limits<float>::max_digits10) << fAttrBeta << ";\n";
-            out <<"\t" << "int " << OpName << "_lda = " << (fAttrTransA ? m : k) << ";\n";
-            out <<"\t" << "int " << OpName << "_ldb = " << (fAttrTransB ? k : n) << ";\n";
-            if (fNC != ""){
-               int length = 1;
-               for (auto& i: fShapeC){
-                  length *= i;
+
+            if (f_m == 1 || f_n == 1){
+            //if (false){
+               int m;
+               int n;
+               if (f_m == 1){
+                  m = (fAttrTransB ? fShapeB[1] : fShapeB[0]);
+                  n = (fAttrTransB ? fShapeB[0] : fShapeB[1]);
+                  //m = fShapeB[1];
+                  //n = fShapeB[0];
+                  fAttrTransB = 1 - fAttrTransB;
+                  out <<"\t" << "char " << OpName << "_trans = " << (fAttrTransB ? "\'n\'" : "\'t\'") << ";\n";
+                  out <<"\t" << "int " << OpName << "_lda = " << fShapeB[1] << ";\n";
+               }else if (f_n == 1){
+                  out <<"\t" << "char " << OpName << "_trans = " << (fAttrTransA ? "\'t\'" : "\'n\'") << ";\n";
+                  m = (fAttrTransA ? fShapeA[1] : fShapeA[0]);
+                  n = (fAttrTransA ? fShapeA[0] : fShapeA[1]);
+                  out <<"\t" << "int " << OpName << "_lda = " << fShapeA[1] << ";\n";
                }
-               out << "\t" << "std::copy(" << "tensor_" << fNC << ", " << "tensor_" << fNC << " + " << length << ", " << "tensor_" << fNY << ");\n";
-            }
-            if (fType == "float"){
-               out << "\t" << "BLAS::sgemm_(&" << OpName << "_transB, &" << OpName << "_transA, &" << OpName
-                << "_n, &" << OpName << "_m, &" << OpName << "_k, &" << OpName << "_alpha, " << "tensor_" << fNB
-                << ", &" << OpName << "_ldb, " << "tensor_" << fNA << ", &" << OpName << "_lda, &" << OpName << "_beta, " << "tensor_" << fNY << ", &"
-                << OpName << "_n);\n";
+               out <<"\t" << "int " << OpName << "_m = " << m << ";\n";
+               out <<"\t" << "int " << OpName << "_n = " << n << ";\n";
+               out << "\t" << "int " << OpName << "_incxy = 1;\n";
+               if (fNC != ""){
+                  int length = 1;
+                  for (auto& i: fShapeC){
+                     length *= i;
+                  }
+                  out << "\t" << "std::copy(" << "tensor_" << fNC << ", " << "tensor_" << fNC << " + " << length << ", " << "tensor_" << fNY << ");\n";
+               }
+
+               if (f_m == 1){
+                  out << "\t" << "BLAS::sgemv_(&" << OpName << "_trans, &" << OpName
+                   << "_m, &" << OpName << "_n, &" << OpName << "_alpha, " << "tensor_" << fNB
+                   << ", &" << OpName << "_lda, " << "tensor_" << fNA << ", &" << OpName << "_incxy, &" << OpName << "_beta, " << "tensor_" << fNY << ", &"
+                   << OpName << "_incxy);\n";
+               }else if (f_n == 1){
+                  out << "\t" << "BLAS::sgemv_(&" << OpName << "_trans, &" << OpName
+                   << "_m, &" << OpName << "_n, &" << OpName << "_alpha, " << "tensor_" << fNA
+                   << ", &" << OpName << "_lda, " << "tensor_" << fNB << ", &" << OpName << "_incxy, &" << OpName << "_beta, " << "tensor_" << fNY << ", &"
+                   << OpName << "_incxy);\n";
+               }
+
+            }else{
+
+               out <<"\t" << "char " << OpName << "_transA = " << (fAttrTransA ? "\'t\'" : "\'n\'") << ";\n";
+               out <<"\t" << "char " << OpName << "_transB = " << (fAttrTransB ? "\'t\'" : "\'n\'") << ";\n";
+               int m = (fAttrTransA ? fShapeA[1] : fShapeA[0]);
+               int n = (fAttrTransB ? fShapeB[0] : fShapeB[1]);
+               int k = (fAttrTransA ? fShapeA[0] : fShapeA[1]);
+               out <<"\t" << "int " << OpName << "_m = " << m << ";\n";
+               out <<"\t" << "int " << OpName << "_n = " << n << ";\n";
+               out <<"\t" << "int " << OpName << "_k = " << k << ";\n";
+               out <<"\t" << "int " << OpName << "_lda = " << (fAttrTransA ? m : k) << ";\n";   //or just fShapeA[1]?
+               out <<"\t" << "int " << OpName << "_ldb = " << (fAttrTransB ? k : n) << ";\n";   // or just fShapeB[1]?
+               if (fNC != ""){
+                  int length = 1;
+                  for (auto& i: fShapeC){
+                     length *= i;
+                  }
+                  out << "\t" << "std::copy(" << "tensor_" << fNC << ", " << "tensor_" << fNC << " + " << length << ", " << "tensor_" << fNY << ");\n";
+               }
+               if (fType == "float"){
+                  out << "\t" << "BLAS::sgemm_(&" << OpName << "_transB, &" << OpName << "_transA, &" << OpName
+                   << "_n, &" << OpName << "_m, &" << OpName << "_k, &" << OpName << "_alpha, " << "tensor_" << fNB
+                   << ", &" << OpName << "_ldb, " << "tensor_" << fNA << ", &" << OpName << "_lda, &" << OpName << "_beta, " << "tensor_" << fNY << ", &"
+                   << OpName << "_n);\n";
+               }
             }
 
          }
