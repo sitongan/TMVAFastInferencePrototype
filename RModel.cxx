@@ -166,15 +166,24 @@ namespace SOFIE{
       }
       if (fUseEigen) fGC += "#include <Eigen/Dense>\n";
       fGC += ("namespace TMVA_SOFIE_" + fName + "{\n");
-      if (fNeedGemm){
-         fGC += ("namespace BLAS{\n"
-         "\textern \"C\" void sgemm_(const char * transa, const char * transb, const int * m, const int * n, const int * k,\n"
-         "\t                       const float * alpha, const float * A, const int * lda, const float * B, const int * ldb,\n"
-         "\t                       const float * beta, float * C, const int * ldc);\n"
-         "\textern \"C\" void sgemv_(const char * trans, const int * m, const int * n, const float * alpha, const float * A,\n"
-         "\t                       const int * lda, const float * X, const int * incx, const float * beta, const float * Y, const int * incy);\n"
-         "}//BLAS\n");
-
+      //if (fNeedGemm) {
+      if (!fNeededBlasRoutines.empty()) {
+         fGC += ("namespace BLAS{\n");
+         for (auto &routine : fNeededBlasRoutines) {
+            if (routine == "Gemm") {
+               fGC += ("\textern \"C\" void sgemm_(const char * transa, const char * transb, const int * m, const int * n, const int * k,\n"
+                       "\t                       const float * alpha, const float * A, const int * lda, const float * B, const int * ldb,\n"
+                       "\t                       const float * beta, float * C, const int * ldc);\n");
+            } else if (routine == "Sgemv") {
+               fGC += ("\textern \"C\" void sgemv_(const char * trans, const int * m, const int * n, const float * alpha, const float * A,\n"
+                       "\t                       const int * lda, const float * X, const int * incx, const float * beta, const float * Y, const int * incy);\n");
+            } else if (routine == "Axpy") {
+               fGC += ("\textern \"C\" void saxpy_(const int * n, const float * alpha, const float * x,\n"
+                       "\t                         const int * incx, float * y, const int * incy);\n");
+            }
+            fGC += ("}//BLAS\n");
+         }
+      }
 
       for (auto& i: fInitializedTensors){
          if (i.second.type == ETensorType::FLOAT){
@@ -238,7 +247,6 @@ namespace SOFIE{
          fGC += "\treturn ret;\n";
       }
       fGC += "}\n";
-      }
       fGC += ("} //TMVA_SOFIE_" + fName + "\n");
    }
 
