@@ -121,9 +121,9 @@ public:
 		}
 
 		fShapeY = fshapeX;
-		// if (fNB != "") { /* ? */
-		// 	fShapeB = model.GetTensorShape(fNB);
-		// }
+		if (fNB != "") { /* ? */
+			fShapeB = model.GetTensorShape(fNB);
+		}
 
 		model.AddIntermediateTensor(fNY, model.GetTensorType(fNX), fShapeY);
 	}
