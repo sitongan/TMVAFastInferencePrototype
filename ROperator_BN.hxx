@@ -18,8 +18,8 @@ class ROperator_BN final : public ROperator
 private:
 
 	/* Attributes */
-	T fepsilon = 1e-05;
-	T fmomentum = 0.9;
+	float fepsilon = 1e-05;
+	float fmomentum = 0.9;
 	std::size_t ftraining_mode = 0;
 
 	std::string fNX;
@@ -39,10 +39,10 @@ private:
 	std::string fType;
 
 public:
-	ROperatorBN() = delete;
+	ROperator_BN() = delete;
 	
 	/* Constructor */
-	ROperatorBN( T epsilon, T momentum, std::size_t training_mode,
+	ROperator_BN( float epsilon, float momentum, std::size_t training_mode,
 	std::string nameX, std::string nameY, std::string nameB, std::string nameScale,
 	std::string nameMean, std::string nameVar):
 	fepsilon(epsilon), fmomentum(momentum), ftraining_mode(training_mode),
@@ -54,9 +54,8 @@ public:
 			fType = "float";
 		}
 		else{
-			throw{
+			throw
 				std::runtime_error("TMVA SOFIE Encountered unsupported type parsing a BN operator");
-			}
 		}
 	}
 	
@@ -108,7 +107,7 @@ public:
 			}
 		}
 		if (fNVar != "") {
-			if (!model.CheckIfTensorAlreadyExist(fVar)) {
+			if (!model.CheckIfTensorAlreadyExist(fNVar)) {
 				throw
 				std::runtime_error("TMVA SOFIE BN op Input Tensor " + fNVar + " is not found in model");
 			}
@@ -120,7 +119,7 @@ public:
 				std::runtime_error("TMVA SOFIE BN Op input tensor" + fNX + " is not of 4 dimensions");
 		}
 
-		fShapeY = fshapeX;
+		fShapeY = fShapeX;
 		if (fNB != "") { /* ? */
 			fShapeB = model.GetTensorShape(fNB);
 		}
@@ -131,12 +130,12 @@ public:
 
 	std::string Generate(std::string OpName){
 		OpName = "op_" + OpName;
-		if (fShape.empty()){
+		if (fShapeX.empty()){
 			throw std::runtime_error("TMVA SOFIE Batch Normalization called to Generate without being initialized first");
 		}
 		std::stringstream out;
 		int length = 1;
-		for(auto& i: fShape){
+		for(auto& i: fShapeX){
 			length *= i;
 		}
 

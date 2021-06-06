@@ -166,9 +166,8 @@ std::unique_ptr<ROperator> make_ROperator_BN(const onnx::NodeProto& nodeproto, c
    }
 
    std::unique_ptr<ROperator> op;
-
-   T fepsilon = 1e-05;
-	T fmomentum = 0.9;
+   float fepsilon = 1e-05;
+	float fmomentum = 0.9;
 	std::size_t ftraining_mode = 0;
 
    // for (int_t i = 0; i < nodeproto.attribute_size(); i++) {
@@ -193,10 +192,11 @@ std::unique_ptr<ROperator> make_ROperator_BN(const onnx::NodeProto& nodeproto, c
    switch(input_type) {
       case ETensorType::FLOAT:
          if (nodeproto.input_size() == 5) {
-            op.reset(new ROperator_Conv<float>(fepsilon, fmomentum, attr_group, ftraining_mode, nodeproto.input(0), nodeproto.input(1), nodeproto.input(2), nodeproto.input(3), nodeproto.input(4), nodeproto.output(0)));
-         } else {
-            op.reset(new ROperator_Conv<float>(fepsilon, fmomentum, attr_group, ftraining_mode, nodeproto.input(0), nodeproto.input(1), nodeproto.input(2), nodeproto.input(3), nodeproto.output(0)));
-         }
+            op.reset(new ROperator_BN<float>(fepsilon, fmomentum, ftraining_mode, nodeproto.input(0), nodeproto.input(1), nodeproto.input(2), nodeproto.input(3), nodeproto.input(4), nodeproto.output(0)));
+         } 
+         // else {
+         //    op.reset(new ROperator_BN<float>(fepsilon, fmomentum, ftraining_mode, nodeproto.input(0), nodeproto.input(1), nodeproto.input(2), nodeproto.input(3), nodeproto.output(0)));
+         // }
          break;
       default:
          throw
