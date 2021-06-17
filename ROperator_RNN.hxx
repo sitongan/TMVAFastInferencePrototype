@@ -4,6 +4,8 @@
 #include "RModel.hxx"
 #include "ROperator.hxx"
 #include "SOFIE_common.hxx"
+#include <cstring>
+#include <memory>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -101,43 +103,61 @@ template <typename T> class ROperator_RNN final : public ROperator {
    void Initialize(RModel &model) {
       // Check the input and output tensors
       if (!model.CheckIfTensorAlreadyExist(fNX)) {
-         throw std::runtime_error("TMVA SOFIE RNN Op input tensor " + fNX +
-                                  "  is not found in model.");
+         throw std::runtime_error("TMVA SOFIE RNN Op input tensor " + fNX + "  is not found in model.");
       }
       fShapeX = model.GetTensorShape(fNX);
       if (fShapeX.size() != 3) {
-         throw std::runtime_error("TMVA SOFIE RNN Op input tensor " + fNX +
-                                  " is not of 3 dimensions.");
+         throw std::runtime_error("TMVA SOFIE RNN Op input tensor " + fNX + " is not of 3 dimensions.");
       }
       if (!model.CheckIfTensorAlreadyExist(fNW)) {
-         throw std::runtime_error("TMVA SOFIE RNN Op input tensor " + fNW +
-                                  "  is not found in model.");
+         throw std::runtime_error("TMVA SOFIE RNN Op input tensor " + fNW + "  is not found in model.");
       }
       fShapeW = model.GetTensorShape(fNW);
       if (fShapeW.size() != 3) {
-         throw std::runtime_error("TMVA SOFIE RNN Op input tensor " + fNR +
-                                  " is not of 3 dimensions.");
+         throw std::runtime_error("TMVA SOFIE RNN Op input tensor " + fNR + " is not of 3 dimensions.");
       }
       if (!model.CheckIfTensorAlreadyExist(fNR)) {
-         throw std::runtime_error("TMVA SOFIE RNN Op input tensor " + fNX +
-                                  "  is not found in model.");
+         throw std::runtime_error("TMVA SOFIE RNN Op input tensor " + fNX + "  is not found in model.");
       }
       fShapeR = model.GetTensorShape(fNR);
       if (fShapeR.size() != 3) {
-         throw std::runtime_error("TMVA SOFIE RNN Op input tensor " + fNR +
-                                  " is not of 3 dimensions.");
+         throw std::runtime_error("TMVA SOFIE RNN Op input tensor " + fNR + " is not of 3 dimensions.");
       }
       if (!fNB.empty()) {
          if (!model.CheckIfTensorAlreadyExist(fNB)) {
-            throw std::runtime_error("TMVA SOFIE RNN op input tensor " + fNB +
-                                     " is not  found in model.");
+            throw std::runtime_error("TMVA SOFIE RNN op input tensor " + fNB + " is not  found in model.");
          }
          fShapeB = model.GetTensorShape(fNB);
-         if (fShapeB.size() != 2) {
-            throw std::runtime_error("TMVA SOFIE RNN op input tensor " + fNB +
-                                     " is not of 2 dimensions.");
+         if (fShapeB.size() != 2 && fShapeB.size() != 4) {
+            throw std::runtime_error("TMVA SOFIE RNN op input tensor " + fNB + " is not of 2 or 4 dimensions.");
          }
-         // TODO Broadcasting the bias
+         if (fShapeB.size() == 2) {
+            // Broadcasting the bias
+            auto original_data = model.GetInitializedTensorData(fNB);
+            size_t num_directions = fShapeW[0];
+            size_t seq_length = (fAttrLayout == 0)? fShapeX[0] : fShapeX[1];
+            size_t batch_size = (fAttrLayout == 0)? fShapeX[1] : fShapeX[0];
+            if (fType == "float") {
+               float *original_bias = static_cast<float*>(original_data.get());
+               float *new_bias = new float[num_directions * seq_length * batch_size * fAttrHiddenSize];
+               float sum[fAttrHiddenSize];
+               for (size_t direction = 0; direction < num_directions; direction++) {
+                  for (size_t h = 0; h < fAttrHiddenSize; h++) {
+                     sum[h] = original_bias[direction * 2*fAttrHiddenSize + h] + original_bias[(2 * direction + 1) * fAttrHiddenSize + h];
+                  }
+                  for (size_t seq = 0; seq < seq_length; seq++) {
+                     for (size_t batch = 0; batch < batch_size; batch++) {
+                        size_t bias_offset = direction * seq_length * batch_size * fAttrHiddenSize + seq * batch_size * fAttrHiddenSize + batch * fAttrHiddenSize;
+                        std::copy(sum, sum + fAttrHiddenSize, new_bias + bias_offset);
+                     }
+                  }
+               }
+               std::vector<size_t> new_bias_shape = {num_directions, seq_length, batch_size, fAttrHiddenSize};
+               std::shared_ptr<void> new_bias_ptr(new_bias, std::default_delete<float[]>());
+               model.UpdateInitializedTensor(fNB, model.GetTensorType(fNB), new_bias_shape, new_bias_ptr);
+               fShapeB = model.GetTensorShape(fNB);
+            }
+         }
       }
       if (!fNSequence_lens.empty()) {
          if (!model.CheckIfTensorAlreadyExist(fNSequence_lens)) {
@@ -165,9 +185,15 @@ template <typename T> class ROperator_RNN final : public ROperator {
       }
       if (!fNY.empty()) {
          fShapeY = ShapeInference({fShapeX, fShapeW})[0];
+         if (!model.CheckIfTensorAlreadyExist(fNY)) {
+            model.AddIntermediateTensor(fNY, model.GetTensorType(fNX), fShapeY);
+         }
       }
       if (!fNY_h.empty()) {
          fShapeY_h = ShapeInference({fShapeX, fShapeW})[1];
+         if (!model.CheckIfTensorAlreadyExist(fNY_h)) {
+            model.AddIntermediateTensor(fNY_h, model.GetTensorType(fNX), fShapeY_h);
+         }
       }
       // Check the attributes
       for (auto &activation : fAttrActivations) {
@@ -210,18 +236,9 @@ template <typename T> class ROperator_RNN final : public ROperator {
       OpName = "op_" + OpName;
       std::stringstream out;
 
-      size_t seq_length;
-      size_t batch_size;
-      size_t input_size;
-      if (fAttrLayout == 0) {
-         seq_length = fShapeX[0];
-         batch_size = fShapeX[1];
-         input_size = fShapeX[2];
-      } else {
-         batch_size = fShapeX[0];
-         seq_length = fShapeX[1];
-         input_size = fShapeX[2];
-      }
+      size_t seq_length = (fAttrLayout == 0) ? fShapeX[0] : fShapeX[1];
+      size_t batch_size = (fAttrLayout == 0) ? fShapeX[1] : fShapeX[0];
+      size_t input_size = fShapeX[2];
       size_t num_directions = fShapeW[0];
 
       // set the input
@@ -380,39 +397,39 @@ template <typename T> class ROperator_RNN final : public ROperator {
          out << "\t" << "\t" << "\t" << "}\n";
       }
       // Apply the activation function
-      out << "\t" << "\t" << "\t" << "if (" << OpName << "_activations[direction] == \"Relu\" ) {\n";
+      out << "\t" << "\t" << "\t" << "if (" << OpName << "_activations[direction] == \"Relu\") {\n";
       out << "\t" << "\t" << "\t" << "\t" << "for (size_t i = offset; i < offset + size; i++) {\n";
       out << "\t" << "\t" << "\t" << "\t" << "\t" << "if (" << OpName << "_hidden_state[i] < 0.)\n";
       out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[i] = 0.;\n";
       out << "\t" << "\t" << "\t" << "\t" << "}\n";
-      out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"Tanh\" ) {\n";
+      out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"Tanh\") {\n";
       out << "\t" << "\t" << "\t" << "\t" << "for (size_t i = offset; i < offset + size; i++) {\n";
       if (fType == "float") {
          out << "\t" << "\t" << "\t" << "\t" << "\t" << "float ex = exp(-2 * " << OpName << "_hidden_state[i]);\n";
       }
       out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[i] = (1. - ex) / (1. + ex);\n";
       out << "\t" << "\t" << "\t" << "\t" << "}\n";
-      out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"Sigmoid\" ) {\n";
+      out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"Sigmoid\") {\n";
       out << "\t" << "\t" << "\t" << "\t" << "for (size_t i = offset; i < offset + size; i++) {\n";
       out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[i] = 1. / (1. + exp(-" << OpName << "_hidden_state[i]));\n";
       out << "\t" << "\t" << "\t" << "\t" << "}\n";
-      out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"Affine\" ) {\n";
+      out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"Affine\") {\n";
       out << "\t" << "\t" << "\t" << "\t" << "for (size_t i = offset; i < offset + size; i++) {\n";
       out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[i] = " << OpName << "_activation_alpha[direction] * " << OpName
           << "_hidden_state[i] + " << OpName << "_activation_beta[direction];\n";
       out << "\t" << "\t" << "\t" << "\t" << "}\n";
-      out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"LeakyRelu\" ) {\n";
+      out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"LeakyRelu\") {\n";
       out << "\t" << "\t" << "\t" << "\t" << "for (size_t i = offset; i < offset + size; i++) {\n";
       out << "\t" << "\t" << "\t" << "\t" << "\t" << "if (" << OpName << "_hidden_state[i] < 0.)\n";
       out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[i] = " << OpName << "_activation_alpha[direction] * " << OpName
           << "_hidden_state[i];\n";
       out << "\t" << "\t" << "\t" << "\t" << "}\n";
-      out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"ThresholdRelu\" ) {\n";
+      out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"ThresholdRelu\") {\n";
       out << "\t" << "\t" << "\t" << "\t" << "for (size_t i = offset; i < offset + size; i++) {\n";
       out << "\t" << "\t" << "\t" << "\t" << "\t" << "if (" << OpName << "_hidden_state[i] < " << OpName << "_activation_alpha[direction])\n";
       out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[i] = 0.;\n";
       out << "\t" << "\t" << "\t" << "\t" << "}";
-      out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"ScaledTanh\" ) {\n";
+      out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"ScaledTanh\") {\n";
       out << "\t" << "\t" << "\t" << "\t" << "for (size_t i = offset; i < offset + size; i++) {\n";
       if (fType == "float") {
          out << "\t" << "\t" << "\t" << "\t" << "\t" << "float ex = exp(-2 * " << OpName << "_activation_beta[direction] * "<< OpName
@@ -420,7 +437,7 @@ template <typename T> class ROperator_RNN final : public ROperator {
       }
       out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[i] = " << OpName << "_activation_alpha[direction] * (1. - ex) / (1. + ex);\n";
       out << "\t" << "\t" << "\t" << "\t" << "}\n";
-      out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"HardSigmoid\" ) {\n";
+      out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"HardSigmoid\") {\n";
       out << "\t" << "\t" << "\t" << "\t" << "for (size_t i = offset; i < offset + size; i++) {\n";
       if (fType == "float") {
          out << "\t" << "\t" << "\t" << "\t" << "\t" << "float a = " << OpName << "_activation_alpha[direction] * "<< OpName << "_hidden_state[i] + "
@@ -429,13 +446,13 @@ template <typename T> class ROperator_RNN final : public ROperator {
       }
       out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[i] = (b < 1.) ? b : 1.;\n";
       out << "\t" << "\t" << "\t" << "\t" << "}\n";
-      out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"Elu\" ) {\n";
+      out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"Elu\") {\n";
       out << "\t" << "\t" << "\t" << "\t" << "for (size_t i = offset; i < offset + size; i++) {\n";
       out << "\t" << "\t" << "\t" << "\t" << "\t" << "if (" << OpName << "_hidden_state[i] < 0.)\n";
       out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[i] = " << OpName << "_activation_alpha[direction] * exp(" << OpName
           << "_hidden_state[i] - 1.);\n";
       out << "\t" << "\t" << "\t" << "\t" << "}\n";
-      out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"Softsign\" ) {\n";
+      out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"Softsign\") {\n";
       out << "\t" << "\t" << "\t" << "\t" << "for (size_t i = offset; i < offset + size; i++) {\n";
       out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[i] = " << OpName << "_hidden_state[i] / (1. + abs(" << OpName
           << "_hidden_state[i]));\n";
