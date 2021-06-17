@@ -226,11 +226,11 @@ std::unique_ptr<ROperator> make_ROperator_RNN(const onnx::NodeProto& nodeproto, 
 
    std::unique_ptr<ROperator> op;
 
-   std::vector<float> attr_activation_alpha;
-   std::vector<float> attr_activation_beta;
-   std::vector<std::string> attr_activations;
-   float attr_clip;
-   std::string attr_direction;
+   std::vector<float> attr_activation_alpha = {};
+   std::vector<float> attr_activation_beta = {};
+   std::vector<std::string> attr_activations = {};
+   float attr_clip = 0.;
+   std::string attr_direction = "forward";
    size_t attr_hidden_size;
    size_t attr_layout = 0;
 
@@ -244,6 +244,8 @@ std::unique_ptr<ROperator> make_ROperator_RNN(const onnx::NodeProto& nodeproto, 
          attr_activations = {nodeproto.attribute(i).strings().begin(), nodeproto.attribute(i).strings().end()};
       } else if (attribute_name == "clip") {
          attr_clip = nodeproto.attribute(i).i();
+      } else if (attribute_name == "direction") {
+         attr_direction = nodeproto.attribute(i).s();
       } else if (attribute_name == "hidden_size") {
          attr_hidden_size = nodeproto.attribute(i).i();
       } else if (attribute_name == "layout") {
@@ -398,13 +400,14 @@ RModel RModelParser_ONNX::Parse(std::string filename){
 
 
 
-   for (int i=0; i < graph.node_size(); i++){
+   for (int i=0; i < graph.node_size(); i++) {
       rmodel.AddOperator(std::move(INTERNAL::make_ROperator(i, graph, tensor_type)));
       std::string op_type = graph.node(i).op_type();
-      std::cout << "+ Operator " << op_type << "\n";
       if (op_type == "Gemm") {
          rmodel.AddBlasRoutines({"Gemm", "Sgemv"});
       } else if (op_type == "Conv") {
+         rmodel.AddBlasRoutines({"Gemm", "Axpy"});
+      } else if (op_type == "RNN") {
          rmodel.AddBlasRoutines({"Gemm", "Axpy"});
       }
    }
