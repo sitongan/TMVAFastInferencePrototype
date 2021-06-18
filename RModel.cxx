@@ -181,8 +181,8 @@ namespace SOFIE{
                fGC += ("\textern \"C\" void saxpy_(const int * n, const float * alpha, const float * x,\n"
                        "\t                         const int * incx, float * y, const int * incy);\n");
             }
-            fGC += ("}//BLAS\n");
          }
+         fGC += ("}//BLAS\n");
       }
 
       for (auto& i: fInitializedTensors){
@@ -221,8 +221,9 @@ namespace SOFIE{
             }
          }
       }else{
-         std::cout << fOutputTensorNames.size() << std::endl;
-         throw std::runtime_error("TMVA-SOFIE: More than 1 output tensor is not yet supported");
+         //std::cout << fOutputTensorNames.size() << std::endl;
+         //throw std::runtime_error("TMVA-SOFIE: More than 1 output tensor is not yet supported");
+         fGC += "// TMVA SOFIE - Warning Model with more than 1 output\n";
       }
 
       fGC += "infer(";
@@ -234,8 +235,8 @@ namespace SOFIE{
          if (i.second.type == ETensorType::FLOAT){
          fGC += "float* tensor_" + i.first + ",";
          }
-         fGC.pop_back(); //remove last ","
       }
+      fGC.pop_back(); //remove last ","
       fGC += "){\n";
 
       for (int id = 0; id < fOperators.size() ; id++){

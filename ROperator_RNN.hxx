@@ -230,6 +230,8 @@ template <typename T> class ROperator_RNN final : public ROperator {
             fAttrActivations = {"Tanh"};
          }
       }
+
+      model.AddNeededStdLib("string");
    }
 
    std::string Generate(std::string OpName) {
@@ -327,7 +329,7 @@ template <typename T> class ROperator_RNN final : public ROperator {
       if (fAttrDirection == "backward") {
          out << "\t" << "\t" << "bool backward = true;\n";
       } else {
-         out << "\t" << "\t" << "bool backward = direction == 1;\n";
+         out << "\t" << "\t" << "bool backward = (direction == 1);\n";
       }
       // feedforward = input * W^T + bias
       out << "\t" << "\t" << "char transA = 'N';\n";
@@ -339,16 +341,17 @@ template <typename T> class ROperator_RNN final : public ROperator {
       if (fType == "float") {
          out << "\t" << "\t" << "float alpha = 1.;\n";
          out << "\t" << "\t" << "float beta = .0;\n";
-         out << "\t" << "\t" << "sgemm_(&transB, &transA, &n, &m1, &k, &alpha, tensor_" << fNW << " + w_offset, &k, " << OpName << "_input, &" << OpName << "_k, &beta, "
-             << OpName << "_feedforward, &n);\n";
+         out << "\t" << "\t" << "BLAS::sgemm_(&transB, &transA, &n, &m1, &k, &alpha, tensor_" << fNW << " + w_offset, &k, " << OpName
+             << "_input, &k, &beta, " << OpName << "_feedforward, &n);\n";
       }
       if (!fNB.empty()) {
-         out << "\t" << "\t" << "size_t bias_size = " << seq_length * batch_size * fAttrHiddenSize << ";\n";
-         out << "\t" << "\t" << "int inx = 1;\n";
+         out << "\t" << "\t" << "int bias_size = " << seq_length * batch_size * fAttrHiddenSize << ";\n";
+         out << "\t" << "\t" << "int incx = 1;\n";
          out << "\t" << "\t" << "int incy = 1;\n";
          out << "\t" << "\t" << "size_t bias_offset = direction * " << seq_length * batch_size * fAttrHiddenSize << ";\n";
          if (fType == "float") {
-            out << "\t" << "\t" << "saxpy_(&bias_size, &alpha, tensor_" << fNB << " + bias_offset, &incx, " << OpName << "_feedforward, &incy);\n";
+            out << "\t" << "\t" << "BLAS::saxpy_(&bias_size, &alpha, tensor_" << fNB << " + bias_offset, &incx, "
+                << OpName << "_feedforward, &incy);\n";
          }
       }
 
@@ -357,24 +360,25 @@ template <typename T> class ROperator_RNN final : public ROperator {
       out << "\t" << "\t" << "\t" << "size_t feedforward_offset = seq * " << batch_size * fAttrHiddenSize << ";\n";
       out << "\t" << "\t" << "\t" << "size_t feedforward_size = " << batch_size * fAttrHiddenSize << ";\n";
       out << "\t" << "\t" << "\t" << "size_t offset = seq * "<< num_directions * batch_size * fAttrHiddenSize << " + direction * "
-          << seq_length * batch_size * fAttrHiddenSize << ";\n";
-      out << "\t" << "\t" << "\t" << "std::copy(" << OpName << "_feedforward + feedforward_offset, " << OpName << "_feedforward + feedforward_offset + feedforward_size, "
-          << OpName << "_hidden_state + offset);\n";
+          << batch_size * fAttrHiddenSize << ";\n";
+      out << "\t" << "\t" << "\t" << "std::copy(" << OpName << "_feedforward + feedforward_offset, " << OpName
+          << "_feedforward + feedforward_offset + feedforward_size, " << OpName << "_hidden_state + offset);\n";
       out << "\t" << "\t" << "}\n";
 
-      out << "\t" << "\t" << "for (size_t seq = 0; seq < " << seq_length << "; seq++) {";
+      out << "\t" << "\t" << "for (size_t seq = 0; seq < " << seq_length << "; seq++) {\n";
       out << "\t" << "\t" << "\t" << "size_t index = backward ? " << seq_length - 1 << " - seq : seq;\n";
       // Compute hidden_state_{seq} = 1.0 * hidden_state_{seq} + hidden_state_{seq - 1} * R^T
       out << "\t" << "\t" << "\t" << "int m2 = " << batch_size << ";\n";
-      out << "\t" << "\t" << "\t" << "size_t offset = index * " << num_directions * batch_size * fAttrHiddenSize << " + direction * " << batch_size * fAttrHiddenSize << ";\n";
+      out << "\t" << "\t" << "\t" << "size_t offset = index * " << num_directions * batch_size * fAttrHiddenSize << " + direction * "
+          << batch_size * fAttrHiddenSize << ";\n";
       out << "\t" << "\t" << "\t" << "size_t size = " << batch_size * fAttrHiddenSize << ";\n";
       out << "\t" << "\t" << "\t" << "if (seq == 0) {\n";
       if (!fNInitial_h.empty()) {
          out << "\t" << "\t" << "\t" << "\t" << "size_t r_offset = direction * " << fAttrHiddenSize * fAttrHiddenSize << ";\n";
          out << "\t" << "\t" << "\t" << "\t" << "size_t initial_hidden_state_offset = direction * " << batch_size * fAttrHiddenSize << ";\n";
          if (fType == "float") {
-            out << "\t" << "\t" << "\t" << "\t" << "sgemm_(&transB, &transA, &n, &m2, &n, &alpha, tensor_" << fNR << " + r_offset, &n, " << OpName 
-                << "_initial_hidden_state + initial_hidden_state_offset, &n, &alpha, " << OpName << "_hidden_state + offset, &n);\n";
+            out << "\t" << "\t" << "\t" << "\t" << "BLAS::sgemm_(&transB, &transA, &n, &m2, &n, &alpha, tensor_" << fNR << " + r_offset, &n, "
+                << OpName << "_initial_hidden_state + initial_hidden_state_offset, &n, &alpha, " << OpName << "_hidden_state + offset, &n);\n";
          }
       }
       out << "\t" << "\t" << "\t" << "} else {\n";
@@ -382,8 +386,8 @@ template <typename T> class ROperator_RNN final : public ROperator {
       out << "\t" << "\t" << "\t" << "\t" << "size_t previous_offset = (backward ? (index + 1) : (seq - 1)) * " << num_directions * batch_size * fAttrHiddenSize
           << " + direction * " << batch_size * fAttrHiddenSize << ";\n";
       if (fType == "float") {
-         out << "\t" << "\t" << "\t" << "\t" << "sgemm_(&transB, &transA, &n, &m2, &n, &alpha, tensor_" << fNR << " + r_offset, &n, " << OpName
-             << "_hidden_state + previous_offset, &n, &alpha, " << OpName << "_hidden_state + offset, &n);\n";
+         out << "\t" << "\t" << "\t" << "\t" << "BLAS::sgemm_(&transB, &transA, &n, &m2, &n, &alpha, tensor_" << fNR << " + r_offset, &n, "
+             << OpName << "_hidden_state + previous_offset, &n, &alpha, " << OpName << "_hidden_state + offset, &n);\n";
       }
       out << "\t" << "\t" << "\t" << "}\n";
       // Clip the elements of hidden_state_{seq} into the range [-fAttrClip, fAttrClip]
@@ -413,49 +417,54 @@ template <typename T> class ROperator_RNN final : public ROperator {
       out << "\t" << "\t" << "\t" << "\t" << "for (size_t i = offset; i < offset + size; i++) {\n";
       out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[i] = 1. / (1. + exp(-" << OpName << "_hidden_state[i]));\n";
       out << "\t" << "\t" << "\t" << "\t" << "}\n";
-      out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"Affine\") {\n";
-      out << "\t" << "\t" << "\t" << "\t" << "for (size_t i = offset; i < offset + size; i++) {\n";
-      out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[i] = " << OpName << "_activation_alpha[direction] * " << OpName
-          << "_hidden_state[i] + " << OpName << "_activation_beta[direction];\n";
-      out << "\t" << "\t" << "\t" << "\t" << "}\n";
-      out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"LeakyRelu\") {\n";
-      out << "\t" << "\t" << "\t" << "\t" << "for (size_t i = offset; i < offset + size; i++) {\n";
-      out << "\t" << "\t" << "\t" << "\t" << "\t" << "if (" << OpName << "_hidden_state[i] < 0.)\n";
-      out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[i] = " << OpName << "_activation_alpha[direction] * " << OpName
-          << "_hidden_state[i];\n";
-      out << "\t" << "\t" << "\t" << "\t" << "}\n";
-      out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"ThresholdRelu\") {\n";
-      out << "\t" << "\t" << "\t" << "\t" << "for (size_t i = offset; i < offset + size; i++) {\n";
-      out << "\t" << "\t" << "\t" << "\t" << "\t" << "if (" << OpName << "_hidden_state[i] < " << OpName << "_activation_alpha[direction])\n";
-      out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[i] = 0.;\n";
-      out << "\t" << "\t" << "\t" << "\t" << "}";
-      out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"ScaledTanh\") {\n";
-      out << "\t" << "\t" << "\t" << "\t" << "for (size_t i = offset; i < offset + size; i++) {\n";
-      if (fType == "float") {
-         out << "\t" << "\t" << "\t" << "\t" << "\t" << "float ex = exp(-2 * " << OpName << "_activation_beta[direction] * "<< OpName
-             << "_hidden_state[i]);\n";
+      if (!fAttrActivationAlpha.empty() && !fAttrActivationBeta.empty()) {
+         out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"Affine\") {\n";
+         out << "\t" << "\t" << "\t" << "\t" << "for (size_t i = offset; i < offset + size; i++) {\n";
+         out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[i] = " << OpName << "_activation_alpha[direction] * "
+             << OpName << "_hidden_state[i] + " << OpName << "_activation_beta[direction];\n";
+         out << "\t" << "\t" << "\t" << "\t" << "}\n";
+         out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"ScaledTanh\") {\n";
+         out << "\t" << "\t" << "\t" << "\t" << "for (size_t i = offset; i < offset + size; i++) {\n";
+         if (fType == "float") {
+            out << "\t" << "\t" << "\t" << "\t" << "\t" << "float ex = exp(-2 * " << OpName << "_activation_beta[direction] * "<< OpName
+                << "_hidden_state[i]);\n";
+         }
+         out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[i] = " << OpName
+             << "_activation_alpha[direction] * (1. - ex) / (1. + ex);\n";
+         out << "\t" << "\t" << "\t" << "\t" << "}\n";
+         out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"HardSigmoid\") {\n";
+         out << "\t" << "\t" << "\t" << "\t" << "for (size_t i = offset; i < offset + size; i++) {\n";
+         if (fType == "float") {
+            out << "\t" << "\t" << "\t" << "\t" << "\t" << "float a = " << OpName << "_activation_alpha[direction] * "<< OpName
+                << "_hidden_state[i] + " << OpName << "_activation_beta[direction];\n";
+            out << "\t" << "\t" << "\t" << "\t" << "\t" << "float b = (a > 0.) ? a : 0.;\n";
+         }
+         out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[i] = (b < 1.) ? b : 1.;\n";
+         out << "\t" << "\t" << "\t" << "\t" << "}\n";
       }
-      out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[i] = " << OpName << "_activation_alpha[direction] * (1. - ex) / (1. + ex);\n";
-      out << "\t" << "\t" << "\t" << "\t" << "}\n";
-      out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"HardSigmoid\") {\n";
-      out << "\t" << "\t" << "\t" << "\t" << "for (size_t i = offset; i < offset + size; i++) {\n";
-      if (fType == "float") {
-         out << "\t" << "\t" << "\t" << "\t" << "\t" << "float a = " << OpName << "_activation_alpha[direction] * "<< OpName << "_hidden_state[i] + "
-             << OpName << "_activation_beta[direction];\n";
-         out << "\t" << "\t" << "\t" << "\t" << "\t" << "float b = (a > 0.) ? a : 0.;\n";
+      if (!fAttrActivationAlpha.empty()) {
+         out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"LeakyRelu\") {\n";
+         out << "\t" << "\t" << "\t" << "\t" << "for (size_t i = offset; i < offset + size; i++) {\n";
+         out << "\t" << "\t" << "\t" << "\t" << "\t" << "if (" << OpName << "_hidden_state[i] < 0.)\n";
+         out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[i] = " << OpName << "_activation_alpha[direction] * "
+             << OpName << "_hidden_state[i];\n";
+         out << "\t" << "\t" << "\t" << "\t" << "}\n";
+         out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"ThresholdRelu\") {\n";
+         out << "\t" << "\t" << "\t" << "\t" << "for (size_t i = offset; i < offset + size; i++) {\n";
+         out << "\t" << "\t" << "\t" << "\t" << "\t" << "if (" << OpName << "_hidden_state[i] < " << OpName << "_activation_alpha[direction])\n";
+         out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[i] = 0.;\n";
+         out << "\t" << "\t" << "\t" << "\t" << "}";
+         out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"Elu\") {\n";
+         out << "\t" << "\t" << "\t" << "\t" << "for (size_t i = offset; i < offset + size; i++) {\n";
+         out << "\t" << "\t" << "\t" << "\t" << "\t" << "if (" << OpName << "_hidden_state[i] < 0.)\n";
+         out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[i] = " << OpName << "_activation_alpha[direction] * exp("
+             << OpName << "_hidden_state[i] - 1.);\n";
+         out << "\t" << "\t" << "\t" << "\t" << "}\n";
       }
-      out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[i] = (b < 1.) ? b : 1.;\n";
-      out << "\t" << "\t" << "\t" << "\t" << "}\n";
-      out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"Elu\") {\n";
-      out << "\t" << "\t" << "\t" << "\t" << "for (size_t i = offset; i < offset + size; i++) {\n";
-      out << "\t" << "\t" << "\t" << "\t" << "\t" << "if (" << OpName << "_hidden_state[i] < 0.)\n";
-      out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[i] = " << OpName << "_activation_alpha[direction] * exp(" << OpName
-          << "_hidden_state[i] - 1.);\n";
-      out << "\t" << "\t" << "\t" << "\t" << "}\n";
       out << "\t" << "\t" << "\t" << "} else if (" << OpName << "_activations[direction] == \"Softsign\") {\n";
       out << "\t" << "\t" << "\t" << "\t" << "for (size_t i = offset; i < offset + size; i++) {\n";
-      out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[i] = " << OpName << "_hidden_state[i] / (1. + abs(" << OpName
-          << "_hidden_state[i]));\n";
+      out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[i] = " << OpName << "_hidden_state[i] / (1. + abs("
+          << OpName << "_hidden_state[i]));\n";
       out << "\t" << "\t" << "\t" << "\t" << "}\n";
       out << "\t" << "\t" << "\t" << "} else {\n"; // Softplus
       out << "\t" << "\t" << "\t" << "\t" << "for (size_t i = offset; i < offset + size; i++) {\n";
@@ -472,8 +481,8 @@ template <typename T> class ROperator_RNN final : public ROperator {
          out << "\t" << "\t" << "\t" << "if (seq >= tensor_" << fNSequence_lens << "[batch]) {\n";
          out << "\t" << "\t" << "\t" << "\t" << "for (direction = 0; direction < " << num_directions << "; direction++) {\n";
          out << "\t" << "\t" << "\t" << "\t" << "\t" << "for (h = 0; h < " << fAttrHiddenSize << "; h++) {\n";
-         out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[seq * " << num_directions * batch_size * fAttrHiddenSize << " + direction * "
-             << batch_size * fAttrHiddenSize << " + batch * " << fAttrHiddenSize << " + h] = 0.;\n";
+         out << "\t" << "\t" << "\t" << "\t" << "\t" << "\t" << OpName << "_hidden_state[seq * " << num_directions * batch_size * fAttrHiddenSize
+             << " + direction * " << batch_size * fAttrHiddenSize << " + batch * " << fAttrHiddenSize << " + h] = 0.;\n";
          out << "\t" << "\t" << "\t" << "\t" << "\t" << "}\n";
          out << "\t" << "\t" << "\t" << "\t" << "}\n";
          out << "\t" << "\t" << "\t" << "}\n";
@@ -510,9 +519,10 @@ template <typename T> class ROperator_RNN final : public ROperator {
                out << "\t" << "\t" << "\t" << "size_t seq = backward ? 0 : tensor_" << fNSequence_lens << "[batch] - 1;\n";
                out << "\t" << "\t" << "\t" << "size_t offset = seq * " << num_directions * batch_size * fAttrHiddenSize << " + direction * "
                    << batch_size * fAttrHiddenSize << " + batch * " << fAttrHiddenSize << ";\n";
-               out << "\t" << "\t" << "\t" << "size_t y_h_offset = direction * " << batch_size * fAttrHiddenSize << " + batch * " << fAttrHiddenSize << ";\n";
-               out << "\t" << "\t" << "\t" << "std::copy(" << OpName << "_hidden_state + offset, " << OpName << "_hidden_state + offset + " << fAttrHiddenSize << ", tensor_"
-                   << fNY_h << " + y_h_offset);\n";
+               out << "\t" << "\t" << "\t" << "size_t y_h_offset = direction * " << batch_size * fAttrHiddenSize << " + batch * "
+                   << fAttrHiddenSize << ";\n";
+               out << "\t" << "\t" << "\t" << "std::copy(" << OpName << "_hidden_state + offset, " << OpName << "_hidden_state + offset + "
+                   << fAttrHiddenSize << ", tensor_" << fNY_h << " + y_h_offset);\n";
                out << "\t" << "\t" << "}\n";
                out << "\t" << "}\n";
             }
@@ -526,8 +536,8 @@ template <typename T> class ROperator_RNN final : public ROperator {
                 << batch_size * fAttrHiddenSize << " + batch * " << fAttrHiddenSize << ";\n";
             out << "\t" << "\t" << "\t" << "\t" << "size_t y_offset = batch * " << seq_length * num_directions * fAttrHiddenSize << " + seq * "
                 << num_directions * fAttrHiddenSize << " + direction * " << fAttrHiddenSize << ";\n";
-            out << "\t" << "\t" << "\t" << "\t" << "std::copy(" << OpName << "_hidden_state + offset, " << OpName << "_hidden_state + offset + " << fAttrHiddenSize
-                << ", tensor_" << fNY << " + y_offset);\n";
+            out << "\t" << "\t" << "\t" << "\t" << "std::copy(" << OpName << "_hidden_state + offset, " << OpName << "_hidden_state + offset + "
+                << fAttrHiddenSize << ", tensor_" << fNY << " + y_offset);\n";
             out << "\t" << "\t" << "\t" << "}\n";
             out << "\t" << "\t" << "}\n";
             out << "\t" << "}\n";
@@ -549,9 +559,10 @@ template <typename T> class ROperator_RNN final : public ROperator {
                out << "\t" << "\t" << "\t" << "size_t offset = seq * " << num_directions * batch_size * fAttrHiddenSize << " + direction * "
                    << batch_size * fAttrHiddenSize << " + batch * " << fAttrHiddenSize << ";\n";
                out << "\t" << "\t" << "\t" << "size_t size = " << batch_size * fAttrHiddenSize << ";\n";
-               out << "\t" << "\t" << "\t" << "size_t y_h_offset = batch * " << num_directions * fAttrHiddenSize << " + direction *" << fAttrHiddenSize << ";\n";
-               out << "\t" << "\t" << "\t" << "std::copy(" << OpName << "_hidden_state + offset, " << OpName << "_hidden_state + offset + " << fAttrHiddenSize << ", tensor_"
-                   << fNY_h << " + y_h_offset);\n";
+               out << "\t" << "\t" << "\t" << "size_t y_h_offset = batch * " << num_directions * fAttrHiddenSize << " + direction *"
+                   << fAttrHiddenSize << ";\n";
+               out << "\t" << "\t" << "\t" << "std::copy(" << OpName << "_hidden_state + offset, " << OpName << "_hidden_state + offset + "
+                   << fAttrHiddenSize << ", tensor_" << fNY_h << " + y_h_offset);\n";
                out << "\t" << "\t" << "}\n";
                out << "\t" << "}\n";
          }

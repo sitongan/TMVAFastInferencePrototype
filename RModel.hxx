@@ -71,9 +71,8 @@ public:
        for (auto &routine : routines) fNeededBlasRoutines.insert(routine);
    }
    void AddNeededStdLib(std::string libname){
-      for (auto& i: fAllowedStdLib){
-         if ( i == libname) fNeededStdLib.insert(libname);
-      }
+      if (fNeededStdLib.find(libname) == fNeededStdLib.end())
+         fNeededStdLib.insert(libname);
    }
    void AddOutputTensorNameList(std::vector<std::string> outputtensornames){
       fOutputTensorNames = outputtensornames;
