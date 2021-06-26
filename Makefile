@@ -2,8 +2,7 @@ CXX = g++
 CPPFLAGS = -std=c++14 -MMD -MP -g
 PROTOBUF = `pkg-config --cflags protobuf`
 PROTOBUFL = `pkg-config --libs protobuf`
-ROOTCONFIG =
-ROOTCONFIG2 = `root-config --cflags --glibs`
+ROOTCONFIG = `root-config --cflags --glibs`
 BLASDIR = /Users/sitongan/rootdev/BLAS-3.8.0
 BLASFLAG = -L${BLASDIR} -lblas
 SRC = ${wildcard *.cxx}
@@ -19,6 +18,9 @@ testinfer: test.cpp
 
 validate: test_old.cpp
 	${CXX} -o testinfer test_old.cpp -std=c++14 -g $(BLASFLAG) -O3 -I ./eigen/
+
+testRDF: testRDF.cxx
+	${CXX} -o testRDF testRDF.cxx -std=c++14 $(ROOTCONFIG) $(BLASFLAG) -g 
 
 -include $(SRC:%.cxx=%.d)
 
