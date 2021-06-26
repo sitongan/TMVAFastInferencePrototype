@@ -18,6 +18,7 @@ namespace SOFIE{
       fGC = other.fGC;
       fNeededStdLib = other.fNeededStdLib;
       fOutputTensorNames = other.fOutputTensorNames;
+      fNeededBlasRoutines = other.fNeededBlasRoutines;
    }
 
    RModel& RModel::operator=(RModel&& other){
@@ -31,6 +32,7 @@ namespace SOFIE{
       fGC = other.fGC;
       fNeededStdLib = other.fNeededStdLib;
       fOutputTensorNames = other.fOutputTensorNames;
+      fNeededBlasRoutines = other.fNeededBlasRoutines;
       return *this;
    }
 
@@ -181,8 +183,8 @@ namespace SOFIE{
                fGC += ("\textern \"C\" void saxpy_(const int * n, const float * alpha, const float * x,\n"
                        "\t                         const int * incx, float * y, const int * incy);\n");
             }
-            fGC += ("}//BLAS\n");
          }
+         fGC += ("}//BLAS\n");
       }
 
       for (auto& i: fInitializedTensors){

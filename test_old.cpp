@@ -1,4 +1,4 @@
-#include "Linear_event.hxx"
+#include "testCaseConv_1.hxx"
 
 #include <algorithm>
 #include <iostream>
@@ -8,8 +8,11 @@
 
 int main(){
    const int batchsize =1;
-   float inputss[100 * batchsize];
-   std::fill_n(inputss, 100 * batchsize, 0.0);
+   float inputss[25];
+   for (int i=0; i < 25; i++){
+      inputss[i] = float(i);
+   }
+   //std::fill_n(inputss, 100 * batchsize, 0.0);
 /*
    for (int i = 0; i < 100 * batchsize; i++){
       srand(time(0));
@@ -17,7 +20,7 @@ int main(){
    }
 */
    auto t1 = std::chrono::high_resolution_clock::now();
-   auto out = TMVA_SOFIE_Linear_event::infer(inputss);
+   auto out = TMVA_SOFIE_testCaseConv_1::infer(inputss);
    auto t2 = std::chrono::high_resolution_clock::now();
    for (auto& i: out){
       std::cout << i << ",";
