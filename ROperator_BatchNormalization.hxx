@@ -1,5 +1,5 @@
-#ifndef TMVA_SOFIE_ROPERATOR_BN
-#define TMVA_SOFIE_ROPERATOR_BN
+#ifndef TMVA_SOFIE_ROPERATOR_BatchNormalization
+#define TMVA_SOFIE_ROPERATOR_BatchNormalization
 
 #include "SOFIE_common.hxx"
 #include "ROperator.hxx"
@@ -12,7 +12,7 @@ namespace Experimental{
 namespace SOFIE{
 
 template <typename T>
-class ROperator_BN final : public ROperator
+class ROperator_BatchNormalization final : public ROperator
 {
 
 private:
@@ -39,10 +39,10 @@ private:
 	std::string fType;
 
 public:
-	ROperator_BN() = delete;
+	ROperator_BatchNormalization() = delete;
 	
 	/* Constructor */
-	ROperator_BN( float epsilon, float momentum, std::size_t training_mode,
+	ROperator_BatchNormalization( float epsilon, float momentum, std::size_t training_mode,
 	std::string nameX, std::string nameY, std::string nameB, std::string nameScale,
 	std::string nameMean, std::string nameVar):
 	fepsilon(epsilon), fmomentum(momentum), ftraining_mode(training_mode),
@@ -55,7 +55,7 @@ public:
 		}
 		else{
 			throw
-				std::runtime_error("TMVA SOFIE Encountered unsupported type parsing a BN operator");
+				std::runtime_error("TMVA SOFIE Encountered unsupported type parsing a BatchNormalization operator");
 		}
 	}
 	
@@ -68,16 +68,15 @@ public:
 	std::vector<std::vector<size_t>> ShapeInference(std::vector<std::vector<size_t>> input) {
 		if (input.size() > 3 ) {
 			throw
-				std::runtime_error("TMVA SOFIE BN Op Shape inference need 2 or 3 input tensors");
+				std::runtime_error("TMVA SOFIE BatchNormalization Op Shape inference need 2 or 3 input tensors");
 		}
 		for(size_t i = 0; i < input.size(); i++) {
 			if (input[i].size() != 4) {
 				throw
-				std::runtime_error("TMVA SOFIE BN Op Shape inference only accept tensor with 4 dimensions");
+				std::runtime_error("TMVA SOFIE BatchNormalization Op Shape inference only accept tensor with 4 dimensions");
 			}
 		}
 
-		/// not sure, what is the need of this
 		auto ret = input; //suggest copy to compiler
 		return ret;
 	}
@@ -85,38 +84,38 @@ public:
 	void Initialize(RModel& model){
 		if (!model.CheckIfTensorAlreadyExist(fNX)) {
 			throw
-				std::runtime_error("TMVA SOFIE BN op Input Tensor " + fNX +  " is not found in model");
+				std::runtime_error("TMVA SOFIE BatchNormalization op Input Tensor " + fNX +  " is not found in model");
 		}
 
 		if (fNB != "") {
 			if (!model.CheckIfTensorAlreadyExist(fNB)) {
 				throw
-				std::runtime_error("TMVA SOFIE BN op Input Tensor " + fNB + " is not found in model");
+				std::runtime_error("TMVA SOFIE BatchNormalization op Input Tensor " + fNB + " is not found in model");
 			}
 		}
 		if (fNScale != "") {
 			if (!model.CheckIfTensorAlreadyExist(fNScale)) {
 				throw
-				std::runtime_error("TMVA SOFIE BN op Input Tensor " + fNScale + " is not found in model");
+				std::runtime_error("TMVA SOFIE BatchNormalization op Input Tensor " + fNScale + " is not found in model");
 			}
 		}
 		if (fNMean != "") {
 			if (!model.CheckIfTensorAlreadyExist(fNMean)) {
 				throw
-				std::runtime_error("TMVA SOFIE BN op Input Tensor " + fNMean + " is not found in model");
+				std::runtime_error("TMVA SOFIE BatchNormalization op Input Tensor " + fNMean + " is not found in model");
 			}
 		}
 		if (fNVar != "") {
 			if (!model.CheckIfTensorAlreadyExist(fNVar)) {
 				throw
-				std::runtime_error("TMVA SOFIE BN op Input Tensor " + fNVar + " is not found in model");
+				std::runtime_error("TMVA SOFIE BatchNormalization op Input Tensor " + fNVar + " is not found in model");
 			}
 		}
 
 		fShapeX = model.GetTensorShape(fNX);
 		if (fShapeX.size() != 4) {
 			throw
-				std::runtime_error("TMVA SOFIE BN Op input tensor" + fNX + " is not of 4 dimensions");
+				std::runtime_error("TMVA SOFIE BatchNormalization Op input tensor" + fNX + " is not of 4 dimensions");
 		}
 
 		fShapeY = fShapeX;
@@ -160,4 +159,4 @@ public:
 }//TMVA
 
 
-#endif //TMVA_SOFIE_ROPERATOR_BN
+#endif //TMVA_SOFIE_ROPERATOR_BatchNormalization

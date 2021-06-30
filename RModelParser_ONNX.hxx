@@ -27,7 +27,7 @@ namespace INTERNAL{
 std::unique_ptr<ROperator> make_ROperator_Transpose(const onnx::NodeProto& nodeproto, const onnx::GraphProto& graphproto, std::unordered_map<std::string, ETensorType>& tensor_type);
 std::unique_ptr<ROperator> make_ROperator_Relu(const onnx::NodeProto& nodeproto, const onnx::GraphProto& graphproto, std::unordered_map<std::string, ETensorType>& tensor_type);
 std::unique_ptr<ROperator> make_ROperator_Gemm(const onnx::NodeProto& nodeproto, const onnx::GraphProto& graphproto, std::unordered_map<std::string, ETensorType>& tensor_type);
-std::unique_ptr<ROperator> make_ROperator_BN(const onnx::NodeProto& nodeproto, const onnx::GraphProto& graphproto, std::unordered_map<std::string, ETensorType>& tensor_type);
+std::unique_ptr<ROperator> make_ROperator_BatchNormalization(const onnx::NodeProto& nodeproto, const onnx::GraphProto& graphproto, std::unordered_map<std::string, ETensorType>& tensor_type);
 
 
 using factoryMethodMap = std::unordered_map<std::string, std::unique_ptr<ROperator> (*)(const onnx::NodeProto&, const onnx::GraphProto&, std::unordered_map<std::string, ETensorType>&)>;
@@ -35,7 +35,7 @@ const factoryMethodMap mapOptypeOperator = {
       {"Gemm", &make_ROperator_Gemm},
       {"Transpose", &make_ROperator_Transpose},
       {"Relu", &make_ROperator_Relu},
-      {"BN", &make_ROperator_BN}
+      {"BatchNormalization", &make_ROperator_BatchNormalization}
    };
 
 
