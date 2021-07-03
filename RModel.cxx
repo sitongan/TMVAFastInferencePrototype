@@ -18,6 +18,7 @@ namespace SOFIE{
       fGC = other.fGC;
       fNeededStdLib = other.fNeededStdLib;
       fOutputTensorNames = other.fOutputTensorNames;
+      fNeededBlasRoutines = other.fNeededBlasRoutines;
    }
 
    RModel& RModel::operator=(RModel&& other){
@@ -31,6 +32,7 @@ namespace SOFIE{
       fGC = other.fGC;
       fNeededStdLib = other.fNeededStdLib;
       fOutputTensorNames = other.fOutputTensorNames;
+      fNeededBlasRoutines = other.fNeededBlasRoutines;
       return *this;
    }
 

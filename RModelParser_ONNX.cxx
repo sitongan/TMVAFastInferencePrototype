@@ -197,9 +197,34 @@ std::unique_ptr<ROperator> make_ROperator_RNN(const onnx::NodeProto& nodeproto, 
       }
    }
 
+   // optional inputs and outputs
+   std::string name_b = "";
+   std::string name_sequence_lens = "";
+   std::string name_initial_h = "";
+   std::string name_y = "";
+   std::string name_y_h = "";
+   if (nodeproto.input_size() > 3) {
+      name_b = nodeproto.input(3);
+   }
+   if (nodeproto.input_size() > 4) {
+      name_sequence_lens = nodeproto.input(4);
+   }
+   if (nodeproto.input_size() > 5) {
+      name_initial_h = nodeproto.input(5);
+   }
+   if (nodeproto.output_size() > 0) {
+      name_y = nodeproto.output(0);
+   }
+   if (nodeproto.output_size() > 1) {
+      name_y_h = nodeproto.output(1);
+   }
+
    switch(input_type) {
       case ETensorType::FLOAT:
-            op.reset(new ROperator_RNN<float>(attr_activation_alpha, attr_activation_beta, attr_activations, attr_clip, attr_direction, attr_hidden_size, attr_layout, nodeproto.input(0), nodeproto.input(1), nodeproto.input(2), nodeproto.input(3), nodeproto.input(4), nodeproto.input(5), nodeproto.output(0), nodeproto.output(1)));
+            op.reset(new ROperator_RNN<float>(attr_activation_alpha, attr_activation_beta, attr_activations,
+               attr_clip, attr_direction, attr_hidden_size, attr_layout,
+               nodeproto.input(0), nodeproto.input(1), nodeproto.input(2),
+               name_b, name_sequence_lens, name_initial_h, name_y, name_y_h));
          break;
       default:
          throw
