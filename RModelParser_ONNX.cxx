@@ -154,64 +154,62 @@ std::unique_ptr<ROperator> make_ROperator_Gemm(const onnx::NodeProto& nodeproto,
 
 std::unique_ptr<ROperator> make_ROperator_BatchNormalization(const onnx::NodeProto& nodeproto, const onnx::GraphProto& graphproto, std::unordered_map<std::string, ETensorType>& tensor_type) {
 
-   // ETensorType input_type;
+   ETensorType input_type;
 
-   // auto input_name = nodeproto.input(0);
-   // auto it = tensor_type.find(input_name);
-   // if (it != tensor_type.end()) {
-   //    input_type = it->second;
-   // } else {
-   //    throw
-   //       std::runtime_error("TMVA::SOFIE ONNX Parser BN op has input tensor " + input_name + " but its type is not yet registered");
+   auto input_name = nodeproto.input(0);
+   auto it = tensor_type.find(input_name);
+   if (it != tensor_type.end()) {
+      input_type = it->second;
+   } else {
+      throw
+         std::runtime_error("TMVA::SOFIE ONNX Parser BN op has input tensor " + input_name + " but its type is not yet registered");
+   }
+
+   std::unique_ptr<ROperator> op;
+   float fepsilon = 1e-05;
+	float fmomentum = 0.9;
+	std::size_t ftraining_mode = 0;
+
+   // for (int_t i = 0; i < nodeproto.attribute_size(); i++) {
+   //    std::string attribute_name = nodeproto.attribute(i).name();
+   //    if (attribute_name == "auto_pad") {
+   //       attr_auto_pad = nodeproto.attribute(i).s();
+   //    } else if (attribute_name == "dilations") {
+   //       attr_dilations = std::vector<size_t>({nodeproto.attribute(i).ints().begin(), nodeproto.attribute(i).ints().end()});
+   //    } else if (attribute_name == "group") {
+   //       attr_group= nodeproto.attribute(i).i();
+   //    } else if (attribute_name == "kernel_shape") {
+   //       attr_kernel_shape = std::vector<size_t>({nodeproto.attribute(i).ints().begin(), nodeproto.attribute(i).ints().end()});
+   //    } else if (attribute_name == "pads") {
+   //       attr_pads = std::vector<size_t>({nodeproto.attribute(i).ints().begin(), nodeproto.attribute(i).ints().end()});
+   //    } else if (attribute_name == "strides") {
+   //       attr_strides = std::vector<size_t>({nodeproto.attribute(i).ints().begin(), nodeproto.attribute(i).ints().end()});
+   //    } else {
+   //       std::cout << "TMVA::SOFIE Warning - Model Loading - Attribute " << attribute_name << " in OperatorNode " << nodeproto.name() << " is not defined in ONNX IR and not applied!\n";
+   //    }
    // }
 
-   // std::unique_ptr<ROperator> op;
-   // float fepsilon = 1e-05;
-	// float fmomentum = 0.9;
-	// std::size_t ftraining_mode = 0;
+   switch(input_type) {
+      case ETensorType::FLOAT:
+         if (nodeproto.input_size() == 5) {
+            op.reset(new ROperator_BatchNormalization<float>(fepsilon, fmomentum, ftraining_mode, nodeproto.input(0), nodeproto.input(1), nodeproto.input(2), nodeproto.input(3), nodeproto.input(4), nodeproto.output(0)));
+         } 
+         // else {
+         //    op.reset(new ROperator_BatchNormalization<float>(fepsilon, fmomentum, ftraining_mode, nodeproto.input(0), nodeproto.input(1), nodeproto.input(2), nodeproto.input(3), nodeproto.output(0)));
+         // }
+         break;
+      default:
+         throw
+            std::runtime_error("TMVA::SOFIE - Unsupported - Operator BN does not yet support input type " + std::to_string(static_cast<int>(input_type)));
+   }
 
-   // // for (int_t i = 0; i < nodeproto.attribute_size(); i++) {
-   // //    std::string attribute_name = nodeproto.attribute(i).name();
-   // //    if (attribute_name == "auto_pad") {
-   // //       attr_auto_pad = nodeproto.attribute(i).s();
-   // //    } else if (attribute_name == "dilations") {
-   // //       attr_dilations = std::vector<size_t>({nodeproto.attribute(i).ints().begin(), nodeproto.attribute(i).ints().end()});
-   // //    } else if (attribute_name == "group") {
-   // //       attr_group= nodeproto.attribute(i).i();
-   // //    } else if (attribute_name == "kernel_shape") {
-   // //       attr_kernel_shape = std::vector<size_t>({nodeproto.attribute(i).ints().begin(), nodeproto.attribute(i).ints().end()});
-   // //    } else if (attribute_name == "pads") {
-   // //       attr_pads = std::vector<size_t>({nodeproto.attribute(i).ints().begin(), nodeproto.attribute(i).ints().end()});
-   // //    } else if (attribute_name == "strides") {
-   // //       attr_strides = std::vector<size_t>({nodeproto.attribute(i).ints().begin(), nodeproto.attribute(i).ints().end()});
-   // //    } else {
-   // //       std::cout << "TMVA::SOFIE Warning - Model Loading - Attribute " << attribute_name << " in OperatorNode " << nodeproto.name() << " is not defined in ONNX IR and not applied!\n";
-   // //    }
-   // // }
+   ETensorType output_type = (op->TypeInference({input_type, input_type, input_type, input_type, input_type}))[0];
+   auto it2 = tensor_type.find(nodeproto.output(0));
+   if (it2 == tensor_type.end()) {
+      tensor_type[nodeproto.output(0)] = output_type;
+   }
 
-   // switch(input_type) {
-   //    case ETensorType::FLOAT:
-   //       if (nodeproto.input_size() == 5) {
-   //          op.reset(new ROperator_BatchNormalization<float>(fepsilon, fmomentum, ftraining_mode, nodeproto.input(0), nodeproto.input(1), nodeproto.input(2), nodeproto.input(3), nodeproto.input(4), nodeproto.output(0)));
-   //       } 
-   //       // else {
-   //       //    op.reset(new ROperator_BatchNormalization<float>(fepsilon, fmomentum, ftraining_mode, nodeproto.input(0), nodeproto.input(1), nodeproto.input(2), nodeproto.input(3), nodeproto.output(0)));
-   //       // }
-   //       break;
-   //    default:
-   //       throw
-   //          std::runtime_error("TMVA::SOFIE - Unsupported - Operator BN does not yet support input type " + std::to_string(static_cast<int>(input_type)));
-   // }
-
-   // ETensorType output_type = (op->TypeInference({input_type, input_type, input_type, input_type, input_type}))[0];
-   // auto it2 = tensor_type.find(nodeproto.output(0));
-   // if (it2 == tensor_type.end()) {
-   //    tensor_type[nodeproto.output(0)] = output_type;
-   // }
-
-   // return std::move(op);
-   std::cout<<"entered parse function ";
-   return NULL;
+   return std::move(op);
 }
 
 } //INTERNAL
@@ -229,14 +227,9 @@ RModel RModelParser_ONNX::Parse(std::string filename){
       filename = (filename.substr(i+1, filename.length() - i));
    }
 
-
-
    std::time_t ttime = std::time(0);
    std::tm* gmt_time = std::gmtime(&ttime);
    std::string parsetime (std::asctime(gmt_time));
-
-
-
 
    GOOGLE_PROTOBUF_VERIFY_VERSION;
    //model I/O
@@ -338,8 +331,7 @@ RModel RModelParser_ONNX::Parse(std::string filename){
       }
    }
 
-
-
+   //// breaking point
    for (int i=0; i < graph.node_size(); i++){
       rmodel.AddOperator(std::move(INTERNAL::make_ROperator(i, graph, tensor_type)));
    }

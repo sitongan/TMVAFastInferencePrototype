@@ -11,12 +11,12 @@ using namespace TMVA::Experimental::SOFIE;
 int main(){
 
    RModelParser_ONNX parser;
-   RModel model = parser.Parse("./Linear_event.onnx");
+   RModel model = parser.Parse("./LinearNN.onnx");
    RModel model2 = std::move(model);
    model2.PrintRequiredInputTensors();
    model2.PrintInitializedTensors();
-   model2.HeadInitializedTensors("18bias");
-   model2.HeadInitializedTensors("0weight");
+   // model2.HeadInitializedTensors("18bias");
+   // model2.HeadInitializedTensors("0weight");
 
 	std::cout << "===" << std::endl;
 
@@ -24,12 +24,9 @@ int main(){
    //model2.PrintGenerated();
    //model2.Initialize();
    model2.PrintInitializedTensors();
-   model2.HeadInitializedTensors("6bias", 100);
-
+   // model2.HeadInitializedTensors("6bias", 100);
 
 	std::cout << "===" << std::endl;
-
-
 
    //model2.PrintGenerated();
    model2.OutputGenerated();
