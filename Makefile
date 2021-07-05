@@ -5,7 +5,7 @@ PROTOBUFL = `pkg-config --libs protobuf`
 ROOTCONFIG = `root-config --cflags --glibs`
 BLASDIR = /Users/sitongan/rootdev/BLAS-3.8.0
 BLASFLAG = -L${BLASDIR} -lblas
-SRC = ${wildcard *.cxx}
+SRC = ${wildcard [!test]*.cxx}
 SOFIEOBEJCT =
 SOFIEHEADER =
 SOFIE = $(SOFIEOBEJCT) $(SOFIEHEADER)
@@ -20,7 +20,7 @@ validate: test_old.cpp
 	${CXX} -o testinfer test_old.cpp -std=c++14 -g $(BLASFLAG) -O3 -I ./eigen/
 
 testRDF: testRDF.cxx
-	${CXX} -o testRDF testRDF.cxx -std=c++14 $(ROOTCONFIG) $(BLASFLAG) -g 
+	${CXX} -o testRDF testRDF.cxx -std=c++14 $(ROOTCONFIG) $(BLASFLAG) -g
 
 -include $(SRC:%.cxx=%.d)
 
