@@ -170,25 +170,6 @@ std::unique_ptr<ROperator> make_ROperator_BatchNormalization(const onnx::NodePro
 	float fmomentum = 0.9;
 	std::size_t ftraining_mode = 0;
 
-   // for (int_t i = 0; i < nodeproto.attribute_size(); i++) {
-   //    std::string attribute_name = nodeproto.attribute(i).name();
-   //    if (attribute_name == "auto_pad") {
-   //       attr_auto_pad = nodeproto.attribute(i).s();
-   //    } else if (attribute_name == "dilations") {
-   //       attr_dilations = std::vector<size_t>({nodeproto.attribute(i).ints().begin(), nodeproto.attribute(i).ints().end()});
-   //    } else if (attribute_name == "group") {
-   //       attr_group= nodeproto.attribute(i).i();
-   //    } else if (attribute_name == "kernel_shape") {
-   //       attr_kernel_shape = std::vector<size_t>({nodeproto.attribute(i).ints().begin(), nodeproto.attribute(i).ints().end()});
-   //    } else if (attribute_name == "pads") {
-   //       attr_pads = std::vector<size_t>({nodeproto.attribute(i).ints().begin(), nodeproto.attribute(i).ints().end()});
-   //    } else if (attribute_name == "strides") {
-   //       attr_strides = std::vector<size_t>({nodeproto.attribute(i).ints().begin(), nodeproto.attribute(i).ints().end()});
-   //    } else {
-   //       std::cout << "TMVA::SOFIE Warning - Model Loading - Attribute " << attribute_name << " in OperatorNode " << nodeproto.name() << " is not defined in ONNX IR and not applied!\n";
-   //    }
-   // }
-
    switch(input_type) {
       case ETensorType::FLOAT:
          if (nodeproto.input_size() == 5) {
