@@ -1,6 +1,7 @@
 #include "RModelParser_ONNX.hxx"
 #include "onnx_proto3.pb.h"
 
+#include <stdexcept>
 #include <string>
 #include <memory>
 
@@ -152,6 +153,106 @@ std::unique_ptr<ROperator> make_ROperator_Gemm(const onnx::NodeProto& nodeproto,
    return std::move(op);
 }
 
+std::unique_ptr<ROperator> make_ROperator_LSTM(const onnx::NodeProto& nodeproto, const onnx::GraphProto& graphproto, std::unordered_map<std::string, ETensorType>& tensor_type) {
+
+   ETensorType input_type;
+
+   auto input_name = nodeproto.input(0);
+   auto it = tensor_type.find(input_name);
+   if (it != tensor_type.end()) {
+      input_type = it->second;
+   } else {
+      throw
+         std::runtime_error("TMVA::SOFIE ONNX Parser LSTM op has input tensor " + input_name + " but its type is not yet registered");
+   }
+
+   std::unique_ptr<ROperator> op;
+
+   std::vector<float> attr_activation_alpha = {};
+   std::vector<float> attr_activation_beta = {};
+   std::vector<std::string> attr_activations = {};
+   float attr_clip = 0.;
+   std::string attr_direction = "forward";
+   size_t attr_hidden_size;
+   size_t attr_input_forget = 0;
+   size_t attr_layout = 0;
+
+   for (int_t i = 0; i < nodeproto.attribute_size(); i++) {
+      std::string attribute_name = nodeproto.attribute(i).name();
+      if (attribute_name == "activation_alpha") {
+         attr_activation_alpha = {nodeproto.attribute(i).floats().begin(), nodeproto.attribute(i).floats().end()};
+      } else if (attribute_name == "activation_beta") {
+         attr_activation_beta = {nodeproto.attribute(i).floats().begin(), nodeproto.attribute(i).floats().end()};
+      } else if (attribute_name == "activations") {
+         attr_activations = {nodeproto.attribute(i).strings().begin(), nodeproto.attribute(i).strings().end()};
+      } else if (attribute_name == "clip") {
+         attr_clip = nodeproto.attribute(i).i();
+      } else if (attribute_name == "direction") {
+         attr_direction = nodeproto.attribute(i).s();
+      } else if (attribute_name == "hidden_size") {
+         attr_hidden_size = nodeproto.attribute(i).i();
+      } else if (attribute_name == "input_forget") {
+         attr_input_forget = nodeproto.attribute(i).i();
+      } else if (attribute_name == "layout") {
+         attr_layout = nodeproto.attribute(i).i();
+      } else {
+         std::cout << "TMVA SOFIE Warning - Model Loading - Attribute " << attribute_name << " in OperatorNode " << nodeproto.name() << " is not defined in ONNX IR and not applied!\n";
+      }
+   }
+
+   // optional inputs and outputs
+   std::string name_b = "";
+   std::string name_sequence_lens = "";
+   std::string name_initial_h = "";
+   std::string name_initial_c = "";
+   std::string name_y = "";
+   std::string name_y_h = "";
+   std::string name_y_c = "";
+   if (nodeproto.input_size() > 3) {
+      name_b = nodeproto.input(3);
+   }
+   if (nodeproto.input_size() > 4) {
+      name_sequence_lens = nodeproto.input(4);
+   }
+   if (nodeproto.input_size() > 5) {
+      name_initial_h = nodeproto.input(5);
+   }
+   if (nodeproto.input_size() > 6) {
+      name_initial_c = nodeproto.input(6);
+   }
+   if (nodeproto.output_size() > 0) {
+      name_y = nodeproto.output(0);
+   }
+   if (nodeproto.output_size() > 1) {
+      name_y_h = nodeproto.output(1);
+   }
+   if (nodeproto.output_size() > 2) {
+      name_y_c = nodeproto.output(2);
+   }
+
+   switch(input_type) {
+      case ETensorType::FLOAT:
+            op.reset(new ROperator_LSTM<float>(attr_activation_alpha, attr_activation_beta, attr_activations,
+               attr_clip, attr_direction, attr_hidden_size, attr_input_forget, attr_layout,
+               nodeproto.input(0), nodeproto.input(1), nodeproto.input(2),
+               name_b, name_sequence_lens, name_initial_h, name_initial_c,
+               name_y, name_y_h, name_y_c));
+         break;
+      default:
+         throw
+            std::runtime_error("TMVA::SOFIE - Unsupported - Operator LSTM does not yet support input type " + std::to_string(static_cast<int>(input_type)));
+   }
+
+   auto output_type = op->TypeInference({input_type, input_type});
+   for (size_t i = 0; i < 2; i++) {
+      if (tensor_type.find(nodeproto.output(i)) == tensor_type.end()) {
+         tensor_type[nodeproto.output(i)] = output_type[i];
+      }
+   }
+
+   return std::move(op);
+}
+
 } //INTERNAL
 
 
@@ -280,6 +381,12 @@ RModel RModelParser_ONNX::Parse(std::string filename){
 
    for (int i=0; i < graph.node_size(); i++){
       rmodel.AddOperator(std::move(INTERNAL::make_ROperator(i, graph, tensor_type)));
+      std::string op_type = graph.node(i).op_type();
+      if (op_type == "Gemm") {
+         rmodel.AddBlasRoutines({"Gemm", "Sgemv"});
+      } else if (op_type == "LSTM") {
+         rmodel.AddBlasRoutines({"Gemm", "Axpy"});
+      }
    }
 
    std::vector<std::string> outputnames;
