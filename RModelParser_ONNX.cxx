@@ -186,7 +186,7 @@ std::unique_ptr<ROperator> make_ROperator_LSTM(const onnx::NodeProto& nodeproto,
       } else if (attribute_name == "activations") {
          attr_activations = {nodeproto.attribute(i).strings().begin(), nodeproto.attribute(i).strings().end()};
       } else if (attribute_name == "clip") {
-         attr_clip = nodeproto.attribute(i).i();
+         attr_clip = nodeproto.attribute(i).f();
       } else if (attribute_name == "direction") {
          attr_direction = nodeproto.attribute(i).s();
       } else if (attribute_name == "hidden_size") {
@@ -205,6 +205,7 @@ std::unique_ptr<ROperator> make_ROperator_LSTM(const onnx::NodeProto& nodeproto,
    std::string name_sequence_lens = "";
    std::string name_initial_h = "";
    std::string name_initial_c = "";
+   std::string name_p = "";
    std::string name_y = "";
    std::string name_y_h = "";
    std::string name_y_c = "";
@@ -219,6 +220,9 @@ std::unique_ptr<ROperator> make_ROperator_LSTM(const onnx::NodeProto& nodeproto,
    }
    if (nodeproto.input_size() > 6) {
       name_initial_c = nodeproto.input(6);
+   }
+   if (nodeproto.input_size() > 7) {
+      name_p = nodeproto.input(7);
    }
    if (nodeproto.output_size() > 0) {
       name_y = nodeproto.output(0);
@@ -235,7 +239,7 @@ std::unique_ptr<ROperator> make_ROperator_LSTM(const onnx::NodeProto& nodeproto,
             op.reset(new ROperator_LSTM<float>(attr_activation_alpha, attr_activation_beta, attr_activations,
                attr_clip, attr_direction, attr_hidden_size, attr_input_forget, attr_layout,
                nodeproto.input(0), nodeproto.input(1), nodeproto.input(2),
-               name_b, name_sequence_lens, name_initial_h, name_initial_c,
+               name_b, name_sequence_lens, name_initial_h, name_initial_c, name_p,
                name_y, name_y_h, name_y_c));
          break;
       default:

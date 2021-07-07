@@ -34,7 +34,7 @@ const factoryMethodMap mapOptypeOperator = {
       {"Gemm", &make_ROperator_Gemm},
       {"Transpose", &make_ROperator_Transpose},
       {"Relu", &make_ROperator_Relu},
-      {"RNN", &make_ROperator_LSTM}
+      {"LSTM", &make_ROperator_LSTM}
    };
 
 
