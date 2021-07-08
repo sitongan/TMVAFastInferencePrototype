@@ -542,14 +542,14 @@ template <typename T> class ROperator_LSTM final : public ROperator {
                // ff_forget_gate += bias_f
                if (direction == 0) {
                   if (fType == "float") {
-                     size_t bo_offset = 3 * num_directions * seq_length * batch_size * fAttrHiddenSize;
+                     size_t bo_offset = num_directions * seq_length * batch_size * fAttrHiddenSize;
                      out << "\t" << "BLAS::saxpy_(&" << OpName << "_bias_size, &" << OpName << "_alpha, tensor_"
                          << fNB << " + " << bo_offset << ", &" << OpName << "_incx, " << OpName << "_ff_forget_gate, &"
                          << OpName << "_incy);\n";
                   }
                } else {
                   if (fType == "float") {
-                     size_t bo_offset = 3 * num_directions * seq_length * batch_size * fAttrHiddenSize
+                     size_t bo_offset = num_directions * seq_length * batch_size * fAttrHiddenSize
                         + seq_length * batch_size * fAttrHiddenSize;
                      out << "\t" << "BLAS::saxpy_(&" << OpName << "_bias_size, &" << OpName << "_alpha, tensor_"
                          << fNB << " + " << bo_offset << ", &" << OpName << "_incx, " << OpName << "_ff_forget_gate, &"
@@ -690,7 +690,7 @@ template <typename T> class ROperator_LSTM final : public ROperator {
             }
          } else {
             out << "\t" << "\t" << "\t" << "size_t previous_offset = (index + 1) * "
-                << num_directions * batch_size * fAttrHiddenSize + batch_size * fAttrHiddenSize << ";\n";
+                << num_directions * batch_size * fAttrHiddenSize << " + " << batch_size * fAttrHiddenSize << ";\n";
             if (fType == "float") {
                size_t ri_offset = 4 * fAttrHiddenSize * fAttrHiddenSize;
                out << "\t" << "\t" << "\t" << "BLAS::sgemm_(&" << OpName << "_transB, &" << OpName << "_transA, &"
@@ -844,35 +844,35 @@ template <typename T> class ROperator_LSTM final : public ROperator {
             if (direction == 0) {
                if (fAttrDirection == "backward") {
                   out << "\t" << "\t" << "\t" << "size_t c_offset = (index + 1) * "
-                      << num_directions * batch_size * fAttrHiddenSize;
+                      << num_directions * batch_size * fAttrHiddenSize << ";\n";
                } else {
                   out << "\t" << "\t" << "\t" << "size_t c_offset = (seq - 1) * "
-                      << num_directions * batch_size * fAttrHiddenSize;
+                      << num_directions * batch_size * fAttrHiddenSize << ";\n";
                }
                out << "\t" << "\t" << "\t" << "for (size_t i = 0; i < " << size << "; i++) {\n";
                out << "\t" << "\t" << "\t" << "\t" << OpName << "_input_gate[i + offset] += tensor_" << fNP
-                   << "[i] * " << OpName << "_initial_cell_state[i + c_offset];\n";
+                   << "[i] * " << OpName << "_cell_state[i + c_offset];\n";
                out << "\t" << "\t" << "\t" << "}\n";
                if (fAttrInputForget == 0) {
                   size_t pf_offset = batch_size * fAttrHiddenSize;
                   out << "\t" << "\t" << "\t" << "for (size_t i = 0; i < " << size << "; i++) {\n";
                   out << "\t" << "\t" << "\t" << "\t" << OpName << "_forget_gate[i + offset] += tensor_" << fNP
-                      << "[i + " << pf_offset << "] * " << OpName << "_initial_cell_state[i + c_offset];\n";
+                      << "[i + " << pf_offset << "] * " << OpName << "_cell_state[i + c_offset];\n";
                   out << "\t" << "\t" << "\t" << "}\n";
                }
             } else { // direction=1
                size_t pi_offset = 3 * batch_size * fAttrHiddenSize;
                out << "\t" << "\t" << "\t" << "size_t c_offset = (index + 1) * "
-                   << num_directions * batch_size * fAttrHiddenSize + batch_size * fAttrHiddenSize;
+                   << num_directions * batch_size * fAttrHiddenSize << " + " << batch_size * fAttrHiddenSize << ";\n";
                out << "\t" << "\t" << "\t" << "for (size_t i = 0; i < " << size << "; i++) {\n";
                out << "\t" << "\t" << "\t" << "\t" << OpName << "_input_gate[i + offset] += tensor_" << fNP
-                   << "[i + " << pi_offset << "] * " << OpName << "_initial_cell_state[i + c_offset];\n";
+                   << "[i + " << pi_offset << "] * " << OpName << "_cell_state[i + c_offset];\n";
                out << "\t" << "\t" << "\t" << "}\n";
                if (fAttrInputForget == 0) {
                   size_t pf_offset = 3 * batch_size * fAttrHiddenSize + batch_size * fAttrHiddenSize;
                   out << "\t" << "\t" << "\t" << "for (size_t i = 0; i < " << size << "; i++) {\n";
                   out << "\t" << "\t" << "\t" << "\t" << OpName << "_forget_gate[i + offset] += tensor_" << fNP
-                      << "[i + " << pf_offset << "] * " << OpName << "_initial_cell_state[i + c_offset];\n";
+                      << "[i + " << pf_offset << "] * " << OpName << "_cell_state[i + c_offset];\n";
                   out << "\t" << "\t" << "\t" << "}\n";
                }
             }
@@ -1074,7 +1074,7 @@ template <typename T> class ROperator_LSTM final : public ROperator {
                }
             } else { // direction=1
                out << "\t" << "\t" << "\t" << "size_t previous_offset = (index + 1) * "
-                   << num_directions * batch_size * fAttrHiddenSize + batch_size * fAttrHiddenSize << ";\n";
+                   << num_directions * batch_size * fAttrHiddenSize << " + " << batch_size * fAttrHiddenSize << ";\n";
             }
             out << "\t" << "\t" << "\t" << "for (size_t i = 0; i < " << size << "; i++) {\n";
             out << "\t" << "\t" << "\t" << "\t" << OpName << "_cell_state[i + offset] += "
