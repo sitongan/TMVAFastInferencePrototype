@@ -722,7 +722,7 @@ template <typename T> class ROperator_LSTM final : public ROperator {
          }
          out << "\t" << "\t" << "}\n";
 
-         // Clip the elements of the cell gate into the range [-fClip, fClip]
+         // Clip the elements of the cell gate into the range [-fAttrClip, fAttrClip]
          if (fAttrClip > .0) {
             out << "\t" << "\t" << "for (size_t i = offset; i < offset + " << size << "; i++) {\n";
             if (fType == "float") {
@@ -879,7 +879,7 @@ template <typename T> class ROperator_LSTM final : public ROperator {
             out << "\t" << "\t" << "}\n";
          }
 
-         // Clip the elements of the input gate into the range [-fClip, fClip]
+         // Clip the elements of the input gate into the range [-fAttrClip, fAttrClip]
          if (fAttrClip > .0) {
             out << "\t" << "\t" << "for (size_t i = offset; i < offset + " << size << "; i++) {\n";
             if (fType == "float") {
@@ -963,7 +963,7 @@ template <typename T> class ROperator_LSTM final : public ROperator {
          }
 
          if (fAttrInputForget == 0) {
-            // Clip the elements of the forget gate into the range [-fClip, fClip]
+            // Clip the elements of the forget gate into the range [-fAttrClip, fAttrClip]
             if (fAttrClip > .0) {
                out << "\t" << "\t" << "for (size_t i = offset; i < offset + " << size << "; i++) {\n";
                if (fType == "float") {
@@ -1100,7 +1100,7 @@ template <typename T> class ROperator_LSTM final : public ROperator {
             }
          }
 
-         // Clip the elements of the output gate into the range [-fClip, fClip]
+         // Clip the elements of the output gate into the range [-fAttrClip, fAttrClip]
          if (fAttrClip > .0) {
             out << "\t" << "\t" << "for (size_t i = offset; i < offset + " << size << "; i++) {\n";
             if (fType == "float") {
