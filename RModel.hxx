@@ -39,7 +39,7 @@ private:
    bool fNeedGemm = true;
 
    const std::vector<std::string> fAllowedStdLib = {"algorithm"};
-   std::set<std::string> fNeededStdLib = {"vector"};
+   std::set<std::string> fNeededStdLib = {"vector", "cmath"};
 
 
 
