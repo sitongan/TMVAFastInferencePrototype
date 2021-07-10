@@ -108,26 +108,26 @@ public:
 			throw
 				std::runtime_error("TMVA SOFIE BatchNormalization Op input tensor" + fNX + " fnx is not of 4 dimensions");
 		}
-		fShapeB = model.GetTensorShape(fNB);
-		if (fShapeB.size() != 4) {
-			throw
-				std::runtime_error("TMVA SOFIE BatchNormalization Op input tensor" + fNB + " fnx is not of 4 dimensions");
-		}
-		fShapeScale = model.GetTensorShape(fNScale);
-		if (fShapeX.size() != 4) {
-			throw
-				std::runtime_error("TMVA SOFIE BatchNormalization Op input tensor" + fNScale + " fnx is not of 4 dimensions");
-		}
-		fShapeMean = model.GetTensorShape(fNMean);
-		if (fShapeMean.size() != 4) {
-			throw
-				std::runtime_error("TMVA SOFIE BatchNormalization Op input tensor" + fNMean + " fnx is not of 4 dimensions");
-		}
-		fShapeVar = model.GetTensorShape(fNVar);
-		if (fShapeVar.size() != 4) {
-			throw
-				std::runtime_error("TMVA SOFIE BatchNormalization Op input tensor" + fNVar + " fnx is not of 4 dimensions");
-		}
+		// fShapeB = model.GetTensorShape(fNB);
+		// if (fShapeB.size() != 4) {
+		// 	throw
+		// 		std::runtime_error("TMVA SOFIE BatchNormalization Op input tensor" + fNB + " fnx is not of 4 dimensions");
+		// }
+		// fShapeScale = model.GetTensorShape(fNScale);
+		// if (fShapeX.size() != 4) {
+		// 	throw
+		// 		std::runtime_error("TMVA SOFIE BatchNormalization Op input tensor" + fNScale + " fnx is not of 4 dimensions");
+		// }
+		// fShapeMean = model.GetTensorShape(fNMean);
+		// if (fShapeMean.size() != 4) {
+		// 	throw
+		// 		std::runtime_error("TMVA SOFIE BatchNormalization Op input tensor" + fNMean + " fnx is not of 4 dimensions");
+		// }
+		// fShapeVar = model.GetTensorShape(fNVar);
+		// if (fShapeVar.size() != 4) {
+		// 	throw
+		// 		std::runtime_error("TMVA SOFIE BatchNormalization Op input tensor" + fNVar + " fnx is not of 4 dimensions");
+		// }
 		fShapeY = fShapeX;
 		model.AddIntermediateTensor(fNY, model.GetTensorType(fNX), fShapeY);
 	}
@@ -144,14 +144,12 @@ public:
 		for(auto& i: fShapeX){
 			length *= i;
 		}
-
-		out <<" BatchNormalization Op \n";
 		// Batch Norm op
 		out << "\t" << "for (size_t n = 0; n < " << fShapeX[0] << "; n++) {\n";
 		out << "\t" << "\t" << "for (size_t c = 0; c < " << fShapeX[1] << "; c++) {\n";
 		out << "\t" << "\t" << "\t" << "for (size_t h = 0; h < " << fShapeX[2] << "; h++) {\n";
 		out << "\t" << "\t" << "\t" << "\t" << "for (size_t w = 0; w < " << fShapeX[3] << "; w++) {\n";
-		out << "\t" << "\t" << "\t" << "\t" << "\t" << "tensor_" << fNY << "[n * " << fShapeX[1] * fShapeX[2] * fShapeX[3] << " + c * "<< fShapeX[2] * fShapeX[3] << " + h * " << fShapeX[3] << " + w] = ((tensor_" << fNX << "[n * " << fShapeX[1] * fShapeX[2] * fShapeX[3] << " + c * "<< fShapeX[2] * fShapeX[3] << " + h * " << fShapeX[3] << " + w] - "<< fNMean <<"[c * "<< fShapeX[2] * fShapeX[3] << "])/ " << OpName << "_sqrt("<< fNVar<< "[c * "<< fShapeX[2] * fShapeX[3] << "]) + "<<fepsilon<<" ) * "<< fNScale <<"[c * "<< fShapeX[2] * fShapeX[3] << "] + "<<fNB<<"[c * "<< fShapeX[2] * fShapeX[3] << "];\n";
+		out << "\t" << "\t" << "\t" << "\t" << "\t" << "tensor_" << fNY << "[n * " << fShapeX[1] * fShapeX[2] * fShapeX[3] << " + c * "<< fShapeX[2] * fShapeX[3] << " + h * " << fShapeX[3] << " + w] = ((tensor_" << fNX << "[n * " << fShapeX[1] * fShapeX[2] * fShapeX[3] << " + c * "<< fShapeX[2] * fShapeX[3] << " + h * " << fShapeX[3] << " + w] - " << "tensor_" << fNMean <<"[c * "<< fShapeX[2] * fShapeX[3] << "])/ std::sqrt(" << "tensor_" << fNVar<< "[c * "<< fShapeX[2] * fShapeX[3] << "]) + "<<fepsilon<<" ) * " << "tensor_" << fNScale <<"[c * "<< fShapeX[2] * fShapeX[3] << "] + " << "tensor_" <<fNB<<"[c * "<< fShapeX[2] * fShapeX[3] << "];\n";
 		out << "\t" << "\t" << "\t" << "\t" << "}\n";
 		out << "\t" << "\t" << "\t" << "}\n";
 		out << "\t" << "\t" << "}\n";	

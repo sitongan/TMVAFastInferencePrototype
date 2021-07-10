@@ -21,6 +21,11 @@ mean = np.random.randn(3).astype(np.float32)
 var = np.random.rand(3).astype(np.float32)
 y = _batchnorm_test_mode(x, s, bias, mean, var).astype(np.float32)
 
+i_s = numpy_helper.from_array(s, 's')
+i_b = numpy_helper.from_array(bias, 'bias')
+i_m = numpy_helper.from_array(mean, 'mean')
+i_v = numpy_helper.from_array(var, 'var')
+
 t_x = helper.make_tensor_value_info('x', TensorProto.FLOAT, [2,3,4,5])
 t_s = helper.make_tensor_value_info('s', TensorProto.FLOAT, [1,1,1,3])
 t_b = helper.make_tensor_value_info('bias', TensorProto.FLOAT, [1,1,1,3])
@@ -39,6 +44,7 @@ graph = helper.make_graph(
     'test-model',
     [t_x, t_s, t_b, t_m, t_v],
     [t_y],
+    [i_s, i_b, i_m, i_v]
 )
 
 model = helper.make_model(graph, producer_name='python_script')

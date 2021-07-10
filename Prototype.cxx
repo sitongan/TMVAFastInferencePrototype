@@ -5,13 +5,14 @@
 
 #include <cctype>
 #include <algorithm>
+#include <iostream>
 
 using namespace TMVA::Experimental::SOFIE;
 
 int main(){
 
    RModelParser_ONNX parser;
-   RModel model = parser.Parse("./LinearNN.onnx");
+   RModel model = parser.Parse("./testCaseBatchNorm_1.onnx");
    RModel model2 = std::move(model);
    model2.PrintRequiredInputTensors();
    model2.PrintInitializedTensors();
@@ -23,10 +24,10 @@ int main(){
    model2.Generate();
    //model2.PrintGenerated();
    //model2.Initialize();
-   model2.PrintInitializedTensors();
+   // model2.PrintInitializedTensors();
    // model2.HeadInitializedTensors("6bias", 100);
 
-	std::cout << "===" << std::endl;
+	// std::cout << "===" << std::endl;
 
    //model2.PrintGenerated();
    model2.OutputGenerated();
