@@ -21,10 +21,12 @@ mean = np.random.randn(3).astype(np.float32)
 var = np.random.rand(3).astype(np.float32)
 y = _batchnorm_test_mode(x, s, bias, mean, var).astype(np.float32)
 
+i_x = numpy_helper.from_array(x, 'x')
 i_s = numpy_helper.from_array(s, 's')
 i_b = numpy_helper.from_array(bias, 'bias')
 i_m = numpy_helper.from_array(mean, 'mean')
 i_v = numpy_helper.from_array(var, 'var')
+i_y = numpy_helper.from_array(y, 'y')
 
 t_x = helper.make_tensor_value_info('x', TensorProto.FLOAT, [2,3,4,5])
 t_s = helper.make_tensor_value_info('s', TensorProto.FLOAT, [1,1,1,3])
@@ -51,3 +53,10 @@ model = helper.make_model(graph, producer_name='python_script')
 onnx.checker.check_model(model)
 
 onnx.save(model, 'testCaseBatchNorm_1.onnx')
+print("model saved")
+
+print("Input array saved to input_arr")
+np.savetxt("input_arr.csv", np.ravel(x), delimiter=",")
+
+print("Expected value of y")
+print(np.ravel(y))

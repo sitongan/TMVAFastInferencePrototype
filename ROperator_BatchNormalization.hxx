@@ -23,15 +23,15 @@ private:
 	std::size_t ftraining_mode = 0;
 
 	std::string fNX;
-	std::string fNB;
 	std::string fNScale;
+	std::string fNB;
 	std::string fNMean;
 	std::string fNVar;
 	std::string fNY;
 
 	std::vector<size_t> fShapeX;
-	std::vector<size_t> fShapeB;
 	std::vector<size_t> fShapeScale;
+	std::vector<size_t> fShapeB;
 	std::vector<size_t> fShapeMean;
 	std::vector<size_t> fShapeVar;
 	std::vector<size_t> fShapeY;
@@ -43,11 +43,11 @@ public:
 	
 	/* Constructor */
 	ROperator_BatchNormalization( float epsilon, float momentum, std::size_t training_mode,
-	std::string nameX, std::string nameB, std::string nameScale,
+	std::string nameX, std::string nameScale, std::string nameB, 
 	std::string nameMean, std::string nameVar, std::string nameY):
 	fepsilon(epsilon), fmomentum(momentum), ftraining_mode(training_mode),
-	fNX(UTILITY::Clean_name(nameX)), fNB(UTILITY::Clean_name(nameB)), 
-	fNScale(UTILITY::Clean_name(nameScale)), fNMean(UTILITY::Clean_name(nameMean)), 
+	fNX(UTILITY::Clean_name(nameX)), fNScale(UTILITY::Clean_name(nameScale)), 
+	fNB(UTILITY::Clean_name(nameB)), fNMean(UTILITY::Clean_name(nameMean)), 
 	fNVar(UTILITY::Clean_name(nameVar)), fNY(UTILITY::Clean_name(nameY))
 	{
 		if(std::is_same<T, float>::value){
@@ -86,13 +86,13 @@ public:
 			throw
 				std::runtime_error("TMVA SOFIE BatchNormalization op Input Tensor " + fNX + " fnx is not found in model");
 		}
-		if (!model.CheckIfTensorAlreadyExist(fNB)) {
-			throw
-				std::runtime_error("TMVA SOFIE BatchNormalization op Input Tensor " + fNB + " fnb is not found in model");
-		}
 		if (!model.CheckIfTensorAlreadyExist(fNScale)) {
 			throw
 				std::runtime_error("TMVA SOFIE BatchNormalization op Input Tensor " + fNScale + " fns is not found in model");
+		}
+		if (!model.CheckIfTensorAlreadyExist(fNB)) {
+			throw
+				std::runtime_error("TMVA SOFIE BatchNormalization op Input Tensor " + fNB + " fnb is not found in model");
 		}
 		if (!model.CheckIfTensorAlreadyExist(fNMean)) {
 			throw
@@ -106,28 +106,14 @@ public:
 		fShapeX = model.GetTensorShape(fNX);
 		if (fShapeX.size() != 4) {
 			throw
-				std::runtime_error("TMVA SOFIE BatchNormalization Op input tensor" + fNX + " fnx is not of 4 dimensions");
+				std::runtime_error("TMVA SOFIE BatchNormalization Op input tensor " + fNX + " fnx is not of 4 dimensions");
 		}
-		// fShapeB = model.GetTensorShape(fNB);
-		// if (fShapeB.size() != 4) {
-		// 	throw
-		// 		std::runtime_error("TMVA SOFIE BatchNormalization Op input tensor" + fNB + " fnx is not of 4 dimensions");
-		// }
-		// fShapeScale = model.GetTensorShape(fNScale);
-		// if (fShapeX.size() != 4) {
-		// 	throw
-		// 		std::runtime_error("TMVA SOFIE BatchNormalization Op input tensor" + fNScale + " fnx is not of 4 dimensions");
-		// }
-		// fShapeMean = model.GetTensorShape(fNMean);
-		// if (fShapeMean.size() != 4) {
-		// 	throw
-		// 		std::runtime_error("TMVA SOFIE BatchNormalization Op input tensor" + fNMean + " fnx is not of 4 dimensions");
-		// }
-		// fShapeVar = model.GetTensorShape(fNVar);
-		// if (fShapeVar.size() != 4) {
-		// 	throw
-		// 		std::runtime_error("TMVA SOFIE BatchNormalization Op input tensor" + fNVar + " fnx is not of 4 dimensions");
-		// }
+		
+		fShapeScale = model.GetTensorShape(fNScale);
+		fShapeB = model.GetTensorShape(fNB);
+		fShapeMean = model.GetTensorShape(fNMean);
+		fShapeVar = model.GetTensorShape(fNVar);
+		
 		fShapeY = fShapeX;
 		model.AddIntermediateTensor(fNY, model.GetTensorType(fNX), fShapeY);
 	}
@@ -149,7 +135,7 @@ public:
 		out << "\t" << "\t" << "for (size_t c = 0; c < " << fShapeX[1] << "; c++) {\n";
 		out << "\t" << "\t" << "\t" << "for (size_t h = 0; h < " << fShapeX[2] << "; h++) {\n";
 		out << "\t" << "\t" << "\t" << "\t" << "for (size_t w = 0; w < " << fShapeX[3] << "; w++) {\n";
-		out << "\t" << "\t" << "\t" << "\t" << "\t" << "tensor_" << fNY << "[n * " << fShapeX[1] * fShapeX[2] * fShapeX[3] << " + c * "<< fShapeX[2] * fShapeX[3] << " + h * " << fShapeX[3] << " + w] = ((tensor_" << fNX << "[n * " << fShapeX[1] * fShapeX[2] * fShapeX[3] << " + c * "<< fShapeX[2] * fShapeX[3] << " + h * " << fShapeX[3] << " + w] - " << "tensor_" << fNMean <<"[c * "<< fShapeX[2] * fShapeX[3] << "])/ std::sqrt(" << "tensor_" << fNVar<< "[c * "<< fShapeX[2] * fShapeX[3] << "]) + "<<fepsilon<<" ) * " << "tensor_" << fNScale <<"[c * "<< fShapeX[2] * fShapeX[3] << "] + " << "tensor_" <<fNB<<"[c * "<< fShapeX[2] * fShapeX[3] << "];\n";
+		out << "\t" << "\t" << "\t" << "\t" << "\t" << "tensor_" << fNY << "[n * " << fShapeX[1] * fShapeX[2] * fShapeX[3] << " + c * "<< fShapeX[2] * fShapeX[3] << " + h * " << fShapeX[3] << " + w] = ((tensor_" << fNX << "[n * " << fShapeX[1] * fShapeX[2] * fShapeX[3] << " + c * "<< fShapeX[2] * fShapeX[3] << " + h * " << fShapeX[3] << " + w] - " << "tensor_" << fNMean <<"[c])/ std::sqrt(" << "tensor_" << fNVar<< "[c]) + "<<fepsilon<<" ) * " << "tensor_" << fNScale <<"[c] + " << "tensor_" <<fNB<<"[c];\n";
 		out << "\t" << "\t" << "\t" << "\t" << "}\n";
 		out << "\t" << "\t" << "\t" << "}\n";
 		out << "\t" << "\t" << "}\n";	
