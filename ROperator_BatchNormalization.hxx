@@ -135,7 +135,7 @@ public:
 		out << "\t" << "\t" << "for (size_t c = 0; c < " << fShapeX[1] << "; c++) {\n";
 		out << "\t" << "\t" << "\t" << "for (size_t h = 0; h < " << fShapeX[2] << "; h++) {\n";
 		out << "\t" << "\t" << "\t" << "\t" << "for (size_t w = 0; w < " << fShapeX[3] << "; w++) {\n";
-		out << "\t" << "\t" << "\t" << "\t" << "\t" << "tensor_" << fNY << "[n * " << fShapeX[1] * fShapeX[2] * fShapeX[3] << " + c * "<< fShapeX[2] * fShapeX[3] << " + h * " << fShapeX[3] << " + w] = ((tensor_" << fNX << "[n * " << fShapeX[1] * fShapeX[2] * fShapeX[3] << " + c * "<< fShapeX[2] * fShapeX[3] << " + h * " << fShapeX[3] << " + w] - " << "tensor_" << fNMean <<"[c])/ std::sqrt(" << "tensor_" << fNVar<< "[c]) + "<<fepsilon<<" ) * " << "tensor_" << fNScale <<"[c] + " << "tensor_" <<fNB<<"[c];\n";
+		out << "\t" << "\t" << "\t" << "\t" << "\t" << "tensor_" << fNY << "[n * " << fShapeX[1] * fShapeX[2] * fShapeX[3] << " + c * "<< fShapeX[2] * fShapeX[3] << " + h * " << fShapeX[3] << " + w] = ((tensor_" << fNX << "[n * " << fShapeX[1] * fShapeX[2] * fShapeX[3] << " + c * "<< fShapeX[2] * fShapeX[3] << " + h * " << fShapeX[3] << " + w] - " << "tensor_" << fNMean <<"[c])/ std::sqrt(" << "tensor_" << fNVar<< "[c] + "<<fepsilon<<" ))* " << "tensor_" << fNScale <<"[c] + " << "tensor_" <<fNB<<"[c];\n";
 		out << "\t" << "\t" << "\t" << "\t" << "}\n";
 		out << "\t" << "\t" << "\t" << "}\n";
 		out << "\t" << "\t" << "}\n";	
