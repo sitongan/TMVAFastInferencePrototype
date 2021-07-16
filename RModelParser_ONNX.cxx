@@ -168,11 +168,11 @@ std::unique_ptr<ROperator> make_ROperator_Conv(const onnx::NodeProto& nodeproto,
    std::unique_ptr<ROperator> op;
 
    std::string attr_auto_pad = "NOTSET";
-   std::vector<size_t> attr_dilations = {};
+   std::vector<size_t> attr_dilations;
    size_t attr_group = 0;
-   std::vector<size_t> attr_kernel_shape = {};
-   std::vector<size_t> attr_pads = {};
-   std::vector<size_t> attr_strides = {};
+   std::vector<size_t> attr_kernel_shape;
+   std::vector<size_t> attr_pads;
+   std::vector<size_t> attr_strides;
 
    for (int_t i = 0; i < nodeproto.attribute_size(); i++) {
       std::string attribute_name = nodeproto.attribute(i).name();
@@ -193,13 +193,14 @@ std::unique_ptr<ROperator> make_ROperator_Conv(const onnx::NodeProto& nodeproto,
       }
    }
 
+   std::string name_b = "";
+   if (nodeproto.input_size() > 2) {
+      name_b = nodeproto.input(2);
+   }
+
    switch(input_type) {
       case ETensorType::FLOAT:
-         if (nodeproto.input_size() == 2) {
-            op.reset(new ROperator_Conv<float>(attr_auto_pad, attr_dilations, attr_group, attr_kernel_shape, attr_pads, attr_strides, nodeproto.input(0), nodeproto.input(1), nodeproto.output(0)));
-         } else {
-            op.reset(new ROperator_Conv<float>(attr_auto_pad, attr_dilations, attr_group, attr_kernel_shape, attr_pads, attr_strides, nodeproto.input(0), nodeproto.input(1), nodeproto.input(2), nodeproto.output(0)));
-         }
+         op.reset(new ROperator_Conv<float>(attr_auto_pad, attr_dilations, attr_group, attr_kernel_shape, attr_pads, attr_strides, nodeproto.input(0), nodeproto.input(1), name_b, nodeproto.output(0)));
          break;
       default:
          throw

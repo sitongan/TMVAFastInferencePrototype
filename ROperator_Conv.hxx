@@ -21,16 +21,16 @@ template<typename T>
 class ROperator_Conv final : public ROperator
 {
 private:
-   std::string fAttrAutopad = "NOTSET";
-   std::vector<size_t> fAttrDilations = {};
-   size_t fAttrGroup = 0;
-   std::vector<size_t> fAttrKernelShape = {};
-   std::vector<size_t> fAttrPads = {};
-   std::vector<size_t> fAttrStrides = {};
+   std::string fAttrAutopad;
+   std::vector<size_t> fAttrDilations;
+   size_t fAttrGroup;
+   std::vector<size_t> fAttrKernelShape;
+   std::vector<size_t> fAttrPads;
+   std::vector<size_t> fAttrStrides;
 
    std::string fNX;
    std::string fNW;
-   std::string fNB = "";
+   std::string fNB;
    std::string fNY;
 
    std::vector<size_t> fShapeX;
@@ -112,12 +112,12 @@ public:
             fAttrPads = {1, 1, 1, 1};
          }
       } else if (fAttrAutopad == "SAME_UPPER" || fAttrAutopad == "SAME_LOWER") {
-         fAttrPads = {(fAttrKernelShape[0] - 1) / 2, (fAttrKernelShape[1] - 1) / 2, fAttrKernelShape[0] / 2, fAttrKernelShape[1] / 2};
+         fAttrPads = {fAttrKernelShape[0] / 2, fAttrKernelShape[1] / 2, fAttrKernelShape[0] / 2, fAttrKernelShape[1] / 2};
          if (fAttrKernelShape[0] % 2 == 1) {
-            (fAttrAutopad == "SAME_UPPER") ? fAttrPads[2]++ : fAttrPads[0]++;
+            (fAttrAutopad == "SAME_UPPER") ? fAttrPads[0]++ : fAttrPads[2]++;
          }
          if (fAttrKernelShape[1] % 2 == 1) {
-            (fAttrAutopad == "SAME_UPPER") ? fAttrPads[3]++ : fAttrPads[1]++;
+            (fAttrAutopad == "SAME_UPPER") ? fAttrPads[1]++ : fAttrPads[3]++;
          }
       } else if (fAttrAutopad != "VALID") {
          throw
@@ -169,8 +169,8 @@ public:
          if (broadcast_needed) {
             auto original_data = model.GetInitializedTensorData(fNB);
             if (fType == "float") {
-               //std::vector<float>* new_data = new std::vector<float>((UTILITY::Unidirectional_broadcast<float>(static_cast<float*>(original_data.get()), fShapeB, fShapeY)));
-               std::shared_ptr<void> new_data_ptr(UTILITY::Unidirectional_broadcast<float>(static_cast<float*>(original_data.get()), fShapeB, fShapeY), std::default_delete<float[]>());
+               std::shared_ptr<void> new_data_ptr(UTILITY::Unidirectional_broadcast<float>(
+                  static_cast<float*>(original_data.get()), fShapeB, fShapeY), std::default_delete<float[]>());
                model.UpdateInitializedTensor(fNB, model.GetTensorType(fNB), fShapeY, new_data_ptr);
                fShapeB = model.GetTensorShape(fNB);
             }
