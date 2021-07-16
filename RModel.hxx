@@ -1,6 +1,7 @@
 #ifndef TMVA_SOFIE_RMODEL
 #define TMVA_SOFIE_RMODEL
 
+#include <initializer_list>
 #include <vector>
 #include <unordered_map>
 #include <iostream>
@@ -36,7 +37,7 @@ private:
 
 
    std::string fGC; //generated code
-   bool fNeedGemm = true;
+   std::set<std::string> fNeededBlasRoutines = {};
 
    const std::vector<std::string> fAllowedStdLib = {"algorithm"};
    std::set<std::string> fNeededStdLib = {"vector"};
@@ -66,6 +67,9 @@ public:
    void AddOperator(std::unique_ptr<ROperator> op, int order_execution = -1);
    void AddInitializedTensor(std::string tensor_name, ETensorType type, std::vector<std::size_t> shape, std::shared_ptr<void> data);
    void AddIntermediateTensor(std::string tensor_name, ETensorType type, std::vector<std::size_t> shape);
+   void AddBlasRoutines(std::initializer_list<std::string> routines) {
+       for (auto &routine : routines) fNeededBlasRoutines.insert(routine);
+   }
    void AddNeededStdLib(std::string libname){
       for (auto& i: fAllowedStdLib){
          if ( i == libname) fNeededStdLib.insert(libname);
