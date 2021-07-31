@@ -114,10 +114,10 @@ template <typename T> class ROperator_RNN final : public ROperator {
       }
       fShapeW = model.GetTensorShape(fNW);
       if (fShapeW.size() != 3) {
-         throw std::runtime_error("TMVA SOFIE RNN Op input tensor " + fNR + " is not of 3 dimensions.");
+         throw std::runtime_error("TMVA SOFIE RNN Op input tensor " + fNW + " is not of 3 dimensions.");
       }
       if (!model.CheckIfTensorAlreadyExist(fNR)) {
-         throw std::runtime_error("TMVA SOFIE RNN Op input tensor " + fNX + "  is not found in model.");
+         throw std::runtime_error("TMVA SOFIE RNN Op input tensor " + fNR + "  is not found in model.");
       }
       fShapeR = model.GetTensorShape(fNR);
       if (fShapeR.size() != 3) {
@@ -230,8 +230,6 @@ template <typename T> class ROperator_RNN final : public ROperator {
             fAttrActivations = {"Tanh"};
          }
       }
-
-      model.AddNeededStdLib("string");
    }
 
    std::string Generate(std::string OpName) {
@@ -353,13 +351,12 @@ template <typename T> class ROperator_RNN final : public ROperator {
 
          // Copy feedforward into hidden state
          out << "\t" << "for (size_t seq = 0; seq < " << seq_length << "; seq++) {\n";
-         out << "\t" << "\t" << "size_t feedforward_offset = seq * " << batch_size * fAttrHiddenSize << ";\n";
+         out << "\t" << "\t" << "size_t offset = seq * " << batch_size * fAttrHiddenSize << ";\n";
+         out << "\t" << "\t" << "size_t size = " << batch_size * fAttrHiddenSize << ";\n";
          out << "\t" << "\t" << "size_t h_offset = seq * " << num_directions * batch_size * fAttrHiddenSize
              << " + " << direction * batch_size * fAttrHiddenSize << ";\n";
-         out << "\t" << "\t" << "size_t feedforward_size = " << batch_size * fAttrHiddenSize << ";\n";
-         out << "\t" << "\t" << "std::copy(" << OpName << "_feedforward + feedforward_offset, "
-             << OpName << "_feedforward + feedforward_offset + feedforward_size, " << OpName
-             << "_hidden_state + h_offset);\n";
+         out << "\t" << "\t" << "std::copy(" << OpName << "_feedforward + offset, " << OpName
+             << "_feedforward + offset + size, " << OpName << "_hidden_state + h_offset);\n";
          out << "\t" << "}\n";
 
 
@@ -514,18 +511,18 @@ template <typename T> class ROperator_RNN final : public ROperator {
       if (fAttrLayout == 0) {
          if (!fNY_h.empty()) {
             if (fNSequence_lens.empty()) {
-               size_t y_h_size = batch_size * fAttrHiddenSize;
+               size_t yh_size = batch_size * fAttrHiddenSize;
                if (fAttrDirection == "backward") {
                   out << "\t" << "std::copy(" << OpName << "_hidden_state, " << OpName << "_hidden_state + "
-                      << y_h_size << ", tensor_" << fNY_h << ");\n";
+                      << yh_size << ", tensor_" << fNY_h << ");\n";
                } else {
                   size_t offset = (seq_length - 1) * num_directions * batch_size * fAttrHiddenSize;
                   out << "\t" << "std::copy(" << OpName << "_hidden_state + " << offset << ", " << OpName
-                      << "_hidden_state + " << offset << " + " << y_h_size << ", tensor_" << fNY_h << ");\n";
+                      << "_hidden_state + " << offset << " + " << yh_size << ", tensor_" << fNY_h << ");\n";
                }
                if (num_directions == 2) {
-                  out << "\t" << "std::copy(" << OpName << "_hidden_state + " << y_h_size << ", " << OpName
-                      << "_hidden_state + " << 2 * y_h_size << ", tensor_" << fNY_h << " + " << y_h_size << ");\n";
+                  out << "\t" << "std::copy(" << OpName << "_hidden_state + " << yh_size << ", " << OpName
+                      << "_hidden_state + " << 2 * yh_size << ", tensor_" << fNY_h << " + " << yh_size << ");\n";
                }
             } else { // RNN with different sequence lengths
                if (fAttrDirection == "backward") {
@@ -539,19 +536,19 @@ template <typename T> class ROperator_RNN final : public ROperator {
                   out << "\t" << "\t" << "size_t seq = " << "tensor_" << fNSequence_lens << "[batch] - 1;\n";
                   out << "\t" << "\t" << "size_t offset = seq * " << num_directions * batch_size * fAttrHiddenSize
                       << " + batch * " << fAttrHiddenSize << ";\n";
-                  out << "\t" << "\t" << "size_t y_h_offset = batch * " << fAttrHiddenSize << ";\n";
+                  out << "\t" << "\t" << "size_t yh_offset = batch * " << fAttrHiddenSize << ";\n";
                   out << "\t" << "\t" << "std::copy(" << OpName << "_hidden_state + offset, " << OpName
-                      << "_hidden_state + offset + " << fAttrHiddenSize << ", tensor_" << fNY_h << " + y_h_offset);\n";
+                      << "_hidden_state + offset + " << fAttrHiddenSize << ", tensor_" << fNY_h << " + yh_offset);\n";
                   out << "\t" << "}\n";
                }
                if (num_directions == 2) {
                   out << "\t" << "for (size_t batch = 0; batch < " << batch_size << "; batch++) {\n";
                   out << "\t" << "\t" << "size_t offset = " << batch_size * fAttrHiddenSize
                       << " + batch * " << fAttrHiddenSize << ";\n";
-                  out << "\t" << "\t" << "size_t y_h_offset = " << batch_size * fAttrHiddenSize
+                  out << "\t" << "\t" << "size_t yh_offset = " << batch_size * fAttrHiddenSize
                       << " + batch * " << fAttrHiddenSize << ";\n";
                   out << "\t" << "\t" << "std::copy(" << OpName << "_hidden_state + offset, " << OpName
-                      << "_hidden_state + offset + " << fAttrHiddenSize << ", tensor_" << fNY_h << " + y_h_offset);\n";
+                      << "_hidden_state + offset + " << fAttrHiddenSize << ", tensor_" << fNY_h << " + yh_offset);\n";
                   out << "\t" << "}\n";
                }
             }
@@ -575,9 +572,9 @@ template <typename T> class ROperator_RNN final : public ROperator {
             if (fAttrDirection == "backward") {
                out << "\t" << "for (size_t batch = 0; batch < " << batch_size << "; batch++) {\n";
                out << "\t" << "\t" << "size_t offset = batch * " << fAttrHiddenSize << ";\n";
-               out << "\t" << "\t" << "size_t y_h_offset = batch * " << num_directions * fAttrHiddenSize << ";\n";
+               out << "\t" << "\t" << "size_t yh_offset = batch * " << num_directions * fAttrHiddenSize << ";\n";
                out << "\t" << "\t" << "std::copy(" << OpName << "_hidden_state + offset, " << OpName
-                   << "_hidden_state + offset + " << fAttrHiddenSize << ", tensor_" << fNY_h << " + y_h_offset);\n";
+                   << "_hidden_state + offset + " << fAttrHiddenSize << ", tensor_" << fNY_h << " + yh_offset);\n";
                out << "\t" << "}\n";
             } else {
                out << "\t" << "for (size_t batch = 0; batch < " << batch_size << "; batch++) {\n";
@@ -588,19 +585,19 @@ template <typename T> class ROperator_RNN final : public ROperator {
                }
                out << "\t" << "\t" << "size_t offset = seq * " << num_directions * batch_size * fAttrHiddenSize
                    << " + batch * " << fAttrHiddenSize << ";\n";
-               out << "\t" << "\t" << "size_t y_h_offset = batch * " << num_directions * fAttrHiddenSize << ";\n";
+               out << "\t" << "\t" << "size_t yh_offset = batch * " << num_directions * fAttrHiddenSize << ";\n";
                out << "\t" << "\t" << "std::copy(" << OpName << "_hidden_state + offset, " << OpName
-                   << "_hidden_state + offset + " << fAttrHiddenSize << ", tensor_" << fNY_h << " + y_h_offset);\n";
+                   << "_hidden_state + offset + " << fAttrHiddenSize << ", tensor_" << fNY_h << " + yh_offset);\n";
                out << "\t" << "}\n";
             }
             if (num_directions == 2) {
                out << "\t" << "for (size_t batch = 0; batch < " << batch_size << "; batch++) {\n";
                out << "\t" << "\t" << "size_t offset = " << batch_size * fAttrHiddenSize << " + batch * "
                    << fAttrHiddenSize << ";\n";
-               out << "\t" << "\t" << "size_t y_h_offset = batch * " << num_directions * fAttrHiddenSize << " + "
+               out << "\t" << "\t" << "size_t yh_offset = batch * " << num_directions * fAttrHiddenSize << " + "
                    << fAttrHiddenSize << ";\n";
                out << "\t" << "\t" << "std::copy(" << OpName << "_hidden_state + offset, " << OpName
-                   << "_hidden_state + offset + " << fAttrHiddenSize << ", tensor_" << fNY_h << " + y_h_offset);\n";
+                   << "_hidden_state + offset + " << fAttrHiddenSize << ", tensor_" << fNY_h << " + yh_offset);\n";
                out << "\t" << "}\n";
             }
          }

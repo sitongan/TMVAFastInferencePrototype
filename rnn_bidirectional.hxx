@@ -1,5 +1,4 @@
-//Code generated automatically by TMVA for Inference of Model file [rnn_bidirectional.onnx] at [Sun Jul  4 18:07:17 2021] 
-#include<string>
+//Code generated automatically by TMVA for Inference of Model file [rnn_bidirectional.onnx] at [Sat Jul 31 21:26:10 2021] 
 #include<vector>
 namespace TMVA_SOFIE_rnn_bidirectional{
 namespace BLAS{
@@ -35,10 +34,10 @@ void infer(float* tensor_X){
 	BLAS::sgemm_(&op_0_transB, &op_0_transA, &op_0_n, &op_0_m, &op_0_k, &op_0_alpha, tensor_W, &op_0_k, op_0_input, &op_0_k, &op_0_beta, op_0_feedforward, &op_0_n);
 	BLAS::saxpy_(&op_0_bias_size, &op_0_alpha, tensor_B, &op_0_incx, op_0_feedforward, &op_0_incy);
 	for (size_t seq = 0; seq < 3; seq++) {
-		size_t feedforward_offset = seq * 12;
+		size_t offset = seq * 12;
+		size_t size = 12;
 		size_t h_offset = seq * 24 + 0;
-		size_t feedforward_size = 12;
-		std::copy(op_0_feedforward + feedforward_offset, op_0_feedforward + feedforward_offset + feedforward_size, op_0_hidden_state + h_offset);
+		std::copy(op_0_feedforward + offset, op_0_feedforward + offset + size, op_0_hidden_state + h_offset);
 	}
 	for (size_t seq = 0; seq < 3; seq++) {
 		size_t index = seq;
@@ -64,10 +63,10 @@ void infer(float* tensor_X){
 	size_t op_0_bias_offset = 36;
 	BLAS::saxpy_(&op_0_bias_size, &op_0_alpha, tensor_B + op_0_bias_offset, &op_0_incx, op_0_feedforward, &op_0_incy);
 	for (size_t seq = 0; seq < 3; seq++) {
-		size_t feedforward_offset = seq * 12;
+		size_t offset = seq * 12;
+		size_t size = 12;
 		size_t h_offset = seq * 24 + 12;
-		size_t feedforward_size = 12;
-		std::copy(op_0_feedforward + feedforward_offset, op_0_feedforward + feedforward_offset + feedforward_size, op_0_hidden_state + h_offset);
+		std::copy(op_0_feedforward + offset, op_0_feedforward + offset + size, op_0_hidden_state + h_offset);
 	}
 	for (size_t seq = 0; seq < 3; seq++) {
 		size_t index = 2 - seq;
@@ -103,13 +102,13 @@ void infer(float* tensor_X){
 	for (size_t batch = 0; batch < 3; batch++) {
 		size_t seq = tensor_sequencelens[batch] - 1;
 		size_t offset = seq * 24 + batch * 4;
-		size_t y_h_offset = batch * 4;
-		std::copy(op_0_hidden_state + offset, op_0_hidden_state + offset + 4, tensor_Yh + y_h_offset);
+		size_t yh_offset = batch * 4;
+		std::copy(op_0_hidden_state + offset, op_0_hidden_state + offset + 4, tensor_Yh + yh_offset);
 	}
 	for (size_t batch = 0; batch < 3; batch++) {
 		size_t offset = 12 + batch * 4;
-		size_t y_h_offset = 12 + batch * 4;
-		std::copy(op_0_hidden_state + offset, op_0_hidden_state + offset + 4, tensor_Yh + y_h_offset);
+		size_t yh_offset = 12 + batch * 4;
+		std::copy(op_0_hidden_state + offset, op_0_hidden_state + offset + 4, tensor_Yh + yh_offset);
 	}
 }
 } //TMVA_SOFIE_rnn_bidirectional

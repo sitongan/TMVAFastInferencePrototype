@@ -1,5 +1,4 @@
-//Code generated automatically by TMVA for Inference of Model file [rnn_seq_length.onnx] at [Sun Jul  4 18:07:17 2021] 
-#include<string>
+//Code generated automatically by TMVA for Inference of Model file [rnn_seq_length.onnx] at [Sat Jul 31 21:26:10 2021] 
 #include<vector>
 namespace TMVA_SOFIE_rnn_seq_length{
 namespace BLAS{
@@ -32,10 +31,10 @@ void infer(float* tensor_X){
 	BLAS::sgemm_(&op_0_transB, &op_0_transA, &op_0_n, &op_0_m, &op_0_k, &op_0_alpha, tensor_W, &op_0_k, op_0_input, &op_0_k, &op_0_beta, op_0_feedforward, &op_0_n);
 	BLAS::saxpy_(&op_0_bias_size, &op_0_alpha, tensor_B, &op_0_incx, op_0_feedforward, &op_0_incy);
 	for (size_t seq = 0; seq < 2; seq++) {
-		size_t feedforward_offset = seq * 15;
+		size_t offset = seq * 15;
+		size_t size = 15;
 		size_t h_offset = seq * 15 + 0;
-		size_t feedforward_size = 15;
-		std::copy(op_0_feedforward + feedforward_offset, op_0_feedforward + feedforward_offset + feedforward_size, op_0_hidden_state + h_offset);
+		std::copy(op_0_feedforward + offset, op_0_feedforward + offset + size, op_0_hidden_state + h_offset);
 	}
 	for (size_t seq = 0; seq < 2; seq++) {
 		size_t index = seq;
