@@ -173,6 +173,9 @@ namespace SOFIE{
          "\t                       const float * beta, float * C, const int * ldc);\n"
          "\textern \"C\" void sgemv_(const char * trans, const int * m, const int * n, const float * alpha, const float * A,\n"
          "\t                       const int * lda, const float * X, const int * incx, const float * beta, const float * Y, const int * incy);\n"
+         "\textern \"C\" void saxpy_(const int *n, const float* alpha, const float* x, const int *incx, float* y, const int* incy);\n"
+         "\textern \"C\" void ssbmv_(const char *uplo, const int *n, const int *k, const float *alpha, const float *a, const int *lda,\n"
+         "\t                       const float *x, const int *incx, const float *beta, float *y, const int *incy);\n"
          "}//BLAS\n");
 
 

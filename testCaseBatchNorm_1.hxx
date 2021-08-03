@@ -1,4 +1,4 @@
-//Code generated automatically by TMVA for Inference of Model file [testCaseBatchNorm_1.onnx] at [Tue Jul 13 13:13:48 2021] 
+//Code generated automatically by TMVA for Inference of Model file [testCaseBatchNorm_1.onnx] at [Tue Aug  3 15:13:55 2021] 
 #include<cmath>
 #include<vector>
 namespace TMVA_SOFIE_testCaseBatchNorm_1{
@@ -8,6 +8,9 @@ namespace BLAS{
 	                       const float * beta, float * C, const int * ldc);
 	extern "C" void sgemv_(const char * trans, const int * m, const int * n, const float * alpha, const float * A,
 	                       const int * lda, const float * X, const int * incx, const float * beta, const float * Y, const int * incy);
+	extern "C" void saxpy_(const int *n, const float* alpha, const float* x, const int *incx, float* y, const int* incy);
+	extern "C" void ssbmv_(const char *uplo, const int *n, const int *k, const float *alpha, const float *a, const int *lda,
+	                       const float *x, const int *incx, const float *beta, float *y, const int *incy);
 }//BLAS
 float tensor_var[3] = {0.801017821, 0.650941014, 0.502549887};
 float tensor_mean[3] = {0.610773981, 0.373008311, 1.85429156};

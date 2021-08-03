@@ -83,6 +83,12 @@ namespace BLAS{
 extern "C" void sgemm_(const char * transa, const char * transb, const int * m, const int * n, const int * k,
                        const float * alpha, const float * A, const int * lda, const float * B, const int * ldb,
                        const float * beta, float * C, const int * ldc);
+extern "C" void saxpy_(const int *n, const float* alpha, const float* x,
+                       const int *incx, float* y, const int* incy);
+extern "C" void ssbmv_(const char *uplo, const int *n, const int *k, const float *alpha,
+                       const float *a, const int *lda, const float *x, const int *incx,
+                       const float *beta, float *y, const int *incy);
+
 }//BLAS
 
 

@@ -77,7 +77,7 @@ public:
 			}
 		}
 
-		auto ret = input; //suggest copy to compiler
+		auto ret = input; 
 		return ret;
 	}
 
@@ -131,16 +131,62 @@ public:
 			length *= i;
 		}
 		// Batch Norm op
-		out << "\t" << "for (size_t n = 0; n < " << fShapeX[0] << "; n++) {\n";
-		out << "\t" << "\t" << "for (size_t c = 0; c < " << fShapeX[1] << "; c++) {\n";
-		out << "\t" << "\t" << "\t" << "for (size_t h = 0; h < " << fShapeX[2] << "; h++) {\n";
-		out << "\t" << "\t" << "\t" << "\t" << "for (size_t w = 0; w < " << fShapeX[3] << "; w++) {\n";
-		out << "\t" << "\t" << "\t" << "\t" << "\t" << "tensor_" << fNY << "[n * " << fShapeX[1] * fShapeX[2] * fShapeX[3] << " + c * "<< fShapeX[2] * fShapeX[3] << " + h * " << fShapeX[3] << " + w] = ((tensor_" << fNX << "[n * " << fShapeX[1] * fShapeX[2] * fShapeX[3] << " + c * "<< fShapeX[2] * fShapeX[3] << " + h * " << fShapeX[3] << " + w] - " << "tensor_" << fNMean <<"[c])/ std::sqrt(" << "tensor_" << fNVar<< "[c] + "<<fepsilon<<" ))* " << "tensor_" << fNScale <<"[c] + " << "tensor_" <<fNB<<"[c];\n";
-		out << "\t" << "\t" << "\t" << "\t" << "}\n";
+		// ///initialize A
+		size_t batchSize = fShapeX[0], channels = fShapeX[1], height = fShapeX[2], width = fShapeX[3];
+		size_t n = batchSize * channels * height * width;
+		if (fType == "float") {
+        	out << "\t" << "float " << OpName << "_A[" << channels << "];\n";
+        }
+		out << "\t"<< "for (size_t c = 0; c < " << channels << "; c++) {\n";
+		out << "\t"<< "\t" << OpName << "_A[c] = (tensor_" << fNScale <<"[c] / std::sqrt(" << "tensor_" << fNVar<< "[c] + "<<fepsilon<<" )); \n";
+		out << "\t"<< "}\n";
+
+		/// Broadcast A, bias and input_mean to shape_X
+		if (fType == "float") {
+        	out << "\t" << "float " << OpName << "_Ba[" << n << "];\n";
+        }
+		if (fType == "float") {
+        	out << "\t" << "float " << OpName << "_Bmean[" << n << "];\n";
+        }
+		out << "\t" << "size_t bs = 0;\n";
+		out << "\t" << "for (size_t c = 0; c < " << channels << "; c++) {\n";
+		out << "\t" << "\t" << "for (size_t h = 0; h < " << height << "; h++) {\n";
+		out << "\t" << "\t" << "\t" << "for (size_t w = 0; w < " << width << "; w++) {\n";
+		out << "\t" << "\t" << "\t" << "\t" << OpName << "_Ba[ bs* " << channels*height*width << " + c * "<< height*width << " + h * " << width << " + w] = "<<OpName << "_A[c];\n";
+		out << "\t" << "\t" << "\t" << "\t" << OpName << "_Bmean[ bs* " << channels*height*width << " + c * "<< height*width << " + h * " << width << " + w] = tensor_" << fNMean <<"[c];\n";
+		out << "\t" << "\t" << "\t" << "\t" << "tensor_" << fNY << "[ bs* " << channels*height*width << " + c * "<< height*width << " + h * " << width << " + w] = tensor_" << fNB <<"[c];\n";
 		out << "\t" << "\t" << "\t" << "}\n";
-		out << "\t" << "\t" << "}\n";	
+		out << "\t" << "\t" << "}\n";
 		out << "\t" << "}\n";
 
+		out << "\t" << "size_t "<<OpName<< "_batchOffset = "<< channels*height*width<<";\n";		
+		out << "\t" << "for (bs = 0; bs < " << batchSize << "; bs++) {\n";
+		out << "\t"<< "\t" << "std::copy("<< OpName << "_Ba, "<< OpName << "_Ba+ "<<OpName<< "_batchOffset, "<< OpName << "_Ba+ (bs* "<<OpName<< "_batchOffset));\n";
+		out << "\t"<< "\t" << "std::copy("<< OpName << "_Bmean, "<< OpName << "_Bmean+"<<OpName<< "_batchOffset, "<< OpName << "_Bmean+ (bs*"<<OpName<< "_batchOffset));\n";
+		out << "\t"<< "\t" << "std::copy("<< "tensor_" << fNY << ", "<< "tensor_" << fNY << " +"<<OpName<< "_batchOffset, "<< "tensor_" << fNY << " + (bs*"<<OpName<< "_batchOffset));\n";
+		out << "\t" << "}\n";
+
+		/// initailize C
+		if (fType == "float") {
+        	out << "\t" << "float " << OpName << "_C[" << n << "];\n";
+        }
+		out << "\t"<< "std::copy("<< "tensor_" << fNX <<", "<< "tensor_" << fNX <<"+"<< n<<", "<< OpName << "_C);\n"; 
+		
+		/// blas saxpy (C = X - Bmean)
+		out << "\t" << "const int N ="<<batchSize * channels * height * width<<";\n";
+		out << "\t" << "const int "<<OpName<< "_incx = 1;\n";
+		out << "\t" << "const int "<<OpName<< "_incy = 1;\n";
+		out << "\t" << "float "<<OpName<< "_alpha = -1;\n";
+		out << "\t" << "BLAS::saxpy_(&N, &" << OpName << "_alpha, " << OpName << "_Bmean, &" << OpName << "_incx," << OpName << "_C, &" << OpName << "_incy);\n\n";
+        
+
+		// blas smbv (Y = CxBa + Bbias)
+		out << "\t" << "char " << OpName << "_uplo = 'L';\n";
+		out << "\t" << "const int "<<OpName<< "_k = 0;\n";
+		out << "\t" << "const int "<<OpName<< "_lda = 1;\n";
+		out << "\t" << "float "<<OpName<< "_beta = -1;\n";
+		out << "\t" <<OpName<< "_alpha = 1;\n";
+		out << "\t" << "BLAS::ssbmv_(&" << OpName << "_uplo, &N, &" << OpName << "_k, &" << OpName << "_alpha, " << OpName << "_C, &" << OpName << "_lda, " << OpName << "_Ba, &" << OpName << "_incx, &" << OpName << "_beta, " << "tensor_" << fNY << ", &" << OpName << "_incy);\n\n";
 		// std::cout<<out;
 		return out.str();
 	}
