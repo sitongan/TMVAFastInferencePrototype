@@ -5,6 +5,8 @@
 #include "ROperator.hxx"
 #include "RModel.hxx"
 
+
+#include <cmath>
 #include <sstream>
 
 namespace TMVA{
@@ -113,9 +115,63 @@ public:
 		fShapeB = model.GetTensorShape(fNB);
 		fShapeMean = model.GetTensorShape(fNMean);
 		fShapeVar = model.GetTensorShape(fNVar);
-		
 		fShapeY = fShapeX;
 		model.AddIntermediateTensor(fNY, model.GetTensorType(fNX), fShapeY);
+
+		if (fShapeB.size() == 1) {
+            // Broadcast scale, bias, input_mean and input_var to shape_X
+            auto original_B = model.GetInitializedTensorData(fNB);
+			auto original_S = model.GetInitializedTensorData(fNScale);
+			auto original_M = model.GetInitializedTensorData(fNMean);
+			auto original_V = model.GetInitializedTensorData(fNVar);
+			size_t batchSize = fShapeX[0], channels = fShapeX[1], height = fShapeX[2], width = fShapeX[3];
+			size_t n = batchSize * channels * height * width;
+            if (fType == "float") {
+				float *original_bias = static_cast<float*>(original_B.get());
+				float *original_scale = static_cast<float*>(original_S.get());
+				float *original_mean = static_cast<float*>(original_M.get());
+				float *original_var = static_cast<float*>(original_V.get());
+				float *new_bias = new float[n];
+				float *new_scale = new float[n];
+				float *new_mean = new float[n];
+				float *new_var = new float[n];
+				size_t bs = 0, ch = 0, h = 0, w = 0;
+				for(ch=0; ch<channels; ch++){
+					for(h=0; h<height; h++){
+						for(w=0; w<width; w++){
+							new_bias[bs*channels*height*width + ch*height*width + h*width + w] = original_bias[ch];
+							new_scale[bs*channels*height*width + ch*height*width + h*width + w] = original_scale[ch];
+							new_mean[bs*channels*height*width + ch*height*width + h*width + w] = original_mean[ch];
+							new_var[bs*channels*height*width + ch*height*width + h*width + w] = original_var[ch];
+						}
+					}
+				}
+				size_t Batchoffset = channels*height*width;
+				for(bs = 1; bs<batchSize; bs++){
+					std::copy(new_bias, new_bias+Batchoffset, new_bias+(bs*Batchoffset));
+					std::copy(new_scale, new_scale+Batchoffset, new_scale+(bs*Batchoffset));
+					std::copy(new_mean, new_mean+Batchoffset, new_mean+(bs*Batchoffset));
+					std::copy(new_var, new_var+Batchoffset, new_var+(bs*Batchoffset));
+				}
+				//// new_var =1. / sqrt(input_var + fepsilon)
+				for(size_t i=0; i<n; i++){
+					new_var[i] = 1./sqrt(new_var[i] + fepsilon);	
+				}
+				std::vector<size_t> new_bias_shape = {batchSize,channels,height,width};
+				std::shared_ptr<void> new_bias_ptr(new_bias, std::default_delete<float[]>());
+				std::shared_ptr<void> new_scale_ptr(new_scale, std::default_delete<float[]>());
+				std::shared_ptr<void> new_mean_ptr(new_mean, std::default_delete<float[]>());
+				std::shared_ptr<void> new_var_ptr(new_var, std::default_delete<float[]>());
+				model.UpdateInitializedTensor(fNB, model.GetTensorType(fNB), new_bias_shape, new_bias_ptr);
+				model.UpdateInitializedTensor(fNScale, model.GetTensorType(fNScale), new_bias_shape, new_scale_ptr);
+				model.UpdateInitializedTensor(fNMean, model.GetTensorType(fNMean), new_bias_shape, new_mean_ptr);
+				model.UpdateInitializedTensor(fNVar, model.GetTensorType(fNVar), new_bias_shape, new_var_ptr);
+				fShapeB = model.GetTensorShape(fNB);
+				fShapeScale = model.GetTensorShape(fNScale);
+				fShapeMean = model.GetTensorShape(fNMean);
+				fShapeVar = model.GetTensorShape(fNVar);
+            }
+        }
 	}
 
 
@@ -130,64 +186,29 @@ public:
 		for(auto& i: fShapeX){
 			length *= i;
 		}
-		// Batch Norm op
-		// ///initialize A
+		//// Batch Norm op
 		size_t batchSize = fShapeX[0], channels = fShapeX[1], height = fShapeX[2], width = fShapeX[3];
 		size_t n = batchSize * channels * height * width;
-		if (fType == "float") {
-        	out << "\t" << "float " << OpName << "_A[" << channels << "];\n";
-        }
-		out << "\t"<< "for (size_t c = 0; c < " << channels << "; c++) {\n";
-		out << "\t"<< "\t" << OpName << "_A[c] = (tensor_" << fNScale <<"[c] / std::sqrt(" << "tensor_" << fNVar<< "[c] + "<<fepsilon<<" )); \n";
-		out << "\t"<< "}\n";
 
-		/// Broadcast A, bias and input_mean to shape_X
-		if (fType == "float") {
-        	out << "\t" << "float " << OpName << "_Ba[" << n << "];\n";
-        }
-		if (fType == "float") {
-        	out << "\t" << "float " << OpName << "_Bmean[" << n << "];\n";
-        }
-		out << "\t" << "size_t bs = 0;\n";
-		out << "\t" << "for (size_t c = 0; c < " << channels << "; c++) {\n";
-		out << "\t" << "\t" << "for (size_t h = 0; h < " << height << "; h++) {\n";
-		out << "\t" << "\t" << "\t" << "for (size_t w = 0; w < " << width << "; w++) {\n";
-		out << "\t" << "\t" << "\t" << "\t" << OpName << "_Ba[ bs* " << channels*height*width << " + c * "<< height*width << " + h * " << width << " + w] = "<<OpName << "_A[c];\n";
-		out << "\t" << "\t" << "\t" << "\t" << OpName << "_Bmean[ bs* " << channels*height*width << " + c * "<< height*width << " + h * " << width << " + w] = tensor_" << fNMean <<"[c];\n";
-		out << "\t" << "\t" << "\t" << "\t" << "tensor_" << fNY << "[ bs* " << channels*height*width << " + c * "<< height*width << " + h * " << width << " + w] = tensor_" << fNB <<"[c];\n";
-		out << "\t" << "\t" << "\t" << "}\n";
-		out << "\t" << "\t" << "}\n";
-		out << "\t" << "}\n";
-
-		out << "\t" << "size_t "<<OpName<< "_batchOffset = "<< channels*height*width<<";\n";		
-		out << "\t" << "for (bs = 0; bs < " << batchSize << "; bs++) {\n";
-		out << "\t"<< "\t" << "std::copy("<< OpName << "_Ba, "<< OpName << "_Ba+ "<<OpName<< "_batchOffset, "<< OpName << "_Ba+ (bs* "<<OpName<< "_batchOffset));\n";
-		out << "\t"<< "\t" << "std::copy("<< OpName << "_Bmean, "<< OpName << "_Bmean+"<<OpName<< "_batchOffset, "<< OpName << "_Bmean+ (bs*"<<OpName<< "_batchOffset));\n";
-		out << "\t"<< "\t" << "std::copy("<< "tensor_" << fNY << ", "<< "tensor_" << fNY << " +"<<OpName<< "_batchOffset, "<< "tensor_" << fNY << " + (bs*"<<OpName<< "_batchOffset));\n";
-		out << "\t" << "}\n";
-
-		/// initailize C
-		if (fType == "float") {
-        	out << "\t" << "float " << OpName << "_C[" << n << "];\n";
-        }
-		out << "\t"<< "std::copy("<< "tensor_" << fNX <<", "<< "tensor_" << fNX <<"+"<< n<<", "<< OpName << "_C);\n"; 
-		
-		/// blas saxpy (C = X - Bmean)
+		//// copy X into Y
 		out << "\t" << "const int N ="<<batchSize * channels * height * width<<";\n";
 		out << "\t" << "const int "<<OpName<< "_incx = 1;\n";
 		out << "\t" << "const int "<<OpName<< "_incy = 1;\n";
+		out << "\t" << "BLAS::scopy_(&N, " << "tensor_" << fNX <<", &" << OpName << "_incx," << "tensor_" << fNY <<", &" << OpName << "_incy);\n\n";
+	
+		//// blas saxpy (Y = -Bmean + Y)
 		out << "\t" << "float "<<OpName<< "_alpha = -1;\n";
-		out << "\t" << "BLAS::saxpy_(&N, &" << OpName << "_alpha, " << OpName << "_Bmean, &" << OpName << "_incx," << OpName << "_C, &" << OpName << "_incy);\n\n";
+		out << "\t" << "BLAS::saxpy_(&N, &" << OpName << "_alpha, " << "tensor_" << fNMean << ", &" << OpName << "_incx," << "tensor_" << fNY <<", &" << OpName << "_incy);\n\n";
         
-
-		// blas smbv (Y = CxBa + Bbias)
-		out << "\t" << "char " << OpName << "_uplo = 'L';\n";
-		out << "\t" << "const int "<<OpName<< "_k = 0;\n";
-		out << "\t" << "const int "<<OpName<< "_lda = 1;\n";
-		out << "\t" << "float "<<OpName<< "_beta = -1;\n";
+		//// Y *= scale*var
+		out << "\t" << "for (size_t i = 0; i < " << n << "; i++) {\n";
+		out << "\t" << "\t" << "tensor_" << fNY << "[i] *= tensor_" << fNScale << "[i] * tensor_" << fNVar << "[i]; \n";
+		out << "\t" << "}\n";
+		
+		//// blas saxpy (Y = Bbias + Y)
 		out << "\t" <<OpName<< "_alpha = 1;\n";
-		out << "\t" << "BLAS::ssbmv_(&" << OpName << "_uplo, &N, &" << OpName << "_k, &" << OpName << "_alpha, " << OpName << "_C, &" << OpName << "_lda, " << OpName << "_Ba, &" << OpName << "_incx, &" << OpName << "_beta, " << "tensor_" << fNY << ", &" << OpName << "_incy);\n\n";
-		// std::cout<<out;
+		out << "\t" << "BLAS::saxpy_(&N, &" << OpName << "_alpha, " << "tensor_" << fNB << ", &" << OpName << "_incx, " << "tensor_" << fNY <<", &" << OpName << "_incy);\n\n";
+        // std::cout<<out;
 		return out.str();
 	}
 

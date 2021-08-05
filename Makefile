@@ -6,7 +6,7 @@ ROOTCONFIG =
 ROOTCONFIG2 = `root-config --cflags --glibs`
 # BLASDIR = /Users/sitongan/rootdev/BLAS-3.8.0
 BLASDIR = /blas-3.8.0/BLAS-3.8.0
-BLASFLAGS = -L${BLASDIR} -lblas
+BLASFLAG = -L${BLASDIR} -lblas
 SRC = ${wildcard *.cxx}
 SOFIEOBEJCT =
 SOFIEHEADER =
@@ -15,8 +15,8 @@ SOFIE = $(SOFIEOBEJCT) $(SOFIEHEADER)
 prototype: ${SRC:%.cxx=%.o}
 	${CXX} -o prototype $^ ${CPPFLAGS} $(ROOTCONFIG) $(PROTOBUFL)
 
-testinfer: test.cpp
-	${CXX} -o testinfer test.cpp -std=c++14 -g $(BLASFLAG) -O3 -I ./eigen/
+testinfer: test_bn.cpp
+	${CXX} -o testinfer test_bn.cpp -std=c++14 -g $(BLASFLAG) -O3 -I ./eigen/
 
 validate: test_old.cpp
 	${CXX} -o testinfer test_old.cpp -std=c++14 -g $(BLASFLAG) -O3 -I ./eigen/
