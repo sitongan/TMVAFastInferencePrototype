@@ -223,8 +223,9 @@ namespace SOFIE{
             }
          }
       }else{
-         std::cout << fOutputTensorNames.size() << std::endl;
-         throw std::runtime_error("TMVA-SOFIE: More than 1 output tensor is not yet supported");
+         //std::cout << fOutputTensorNames.size() << std::endl;
+         //throw std::runtime_error("TMVA-SOFIE: More than 1 output tensor is not yet supported");
+         fGC += "// TMVA SOFIE - Warning Model with more than 1 output\n";
       }
 
       fGC += "infer(";
@@ -236,8 +237,8 @@ namespace SOFIE{
          if (i.second.type == ETensorType::FLOAT){
          fGC += "float* tensor_" + i.first + ",";
          }
-         fGC.pop_back(); //remove last ","
       }
+      fGC.pop_back(); //remove last ","
       fGC += "){\n";
 
       for (int id = 0; id < fOperators.size() ; id++){
