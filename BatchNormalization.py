@@ -13,12 +13,12 @@ def _batchnorm_test_mode(x, s, bias, mean, var, epsilon=1e-5):
     var = var.reshape(-1, *dim_ones)
     return s * (x - mean) / np.sqrt(var + epsilon) + bias
 
-# input size: (2, 3, 4, 5)
-x = np.random.randn(2, 3, 4, 5).astype(np.float32)
-s = np.random.randn(3).astype(np.float32)
-bias = np.random.randn(3).astype(np.float32)
-mean = np.random.randn(3).astype(np.float32)
-var = np.random.rand(3).astype(np.float32)
+# input size: (10, 40, 30, 20)
+x = np.random.randn(10, 40, 30, 20).astype(np.float32)
+s = np.random.randn(40).astype(np.float32)
+bias = np.random.randn(40).astype(np.float32)
+mean = np.random.randn(40).astype(np.float32)
+var = np.random.rand(40).astype(np.float32)
 y = _batchnorm_test_mode(x, s, bias, mean, var).astype(np.float32)
 
 i_x = numpy_helper.from_array(x, 'x')
@@ -28,12 +28,12 @@ i_m = numpy_helper.from_array(mean, 'mean')
 i_v = numpy_helper.from_array(var, 'var')
 i_y = numpy_helper.from_array(y, 'y')
 
-t_x = helper.make_tensor_value_info('x', TensorProto.FLOAT, [2,3,4,5])
-t_s = helper.make_tensor_value_info('s', TensorProto.FLOAT, [1,1,1,3])
-t_b = helper.make_tensor_value_info('bias', TensorProto.FLOAT, [1,1,1,3])
-t_m = helper.make_tensor_value_info('mean', TensorProto.FLOAT, [1,1,1,3])
-t_v = helper.make_tensor_value_info('var', TensorProto.FLOAT, [1,1,1,3])
-t_y = helper.make_tensor_value_info('y', TensorProto.FLOAT, [2,3,4,5])
+t_x = helper.make_tensor_value_info('x', TensorProto.FLOAT, [10, 40, 30, 20])
+t_s = helper.make_tensor_value_info('s', TensorProto.FLOAT, [1,1,1,40])
+t_b = helper.make_tensor_value_info('bias', TensorProto.FLOAT, [1,1,1,40])
+t_m = helper.make_tensor_value_info('mean', TensorProto.FLOAT, [1,1,1,40])
+t_v = helper.make_tensor_value_info('var', TensorProto.FLOAT, [1,1,1,40])
+t_y = helper.make_tensor_value_info('y', TensorProto.FLOAT, [10, 40, 30, 20])
 
 node = onnx.helper.make_node(
     'BatchNormalization',
