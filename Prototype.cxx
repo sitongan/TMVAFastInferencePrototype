@@ -12,7 +12,7 @@ using namespace TMVA::Experimental::SOFIE;
 int main(){
 
    RModelParser_ONNX parser;
-   RModel model = parser.Parse("./testCaseBatchNorm_1.onnx");
+   RModel model = parser.Parse("./testCaseInstanceNorm_1.onnx");
    RModel model2 = std::move(model);
    model2.PrintRequiredInputTensors();
    model2.PrintInitializedTensors();

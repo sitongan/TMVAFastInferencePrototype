@@ -15,8 +15,8 @@ SOFIE = $(SOFIEOBEJCT) $(SOFIEHEADER)
 prototype: ${SRC:%.cxx=%.o}
 	${CXX} -o prototype $^ ${CPPFLAGS} $(ROOTCONFIG) $(PROTOBUFL)
 
-testinfer: test_bn.cpp
-	${CXX} -o testinfer test_bn.cpp -std=c++14 -g $(BLASFLAG) -O3 -I ./eigen/
+testinfer: test_in.cpp
+	${CXX} -o testinfer test_in.cpp -std=c++14 -g $(BLASFLAG) -O3 -I ./eigen/
 
 validate: test_old.cpp
 	${CXX} -o testinfer test_old.cpp -std=c++14 -g $(BLASFLAG) -O3 -I ./eigen/

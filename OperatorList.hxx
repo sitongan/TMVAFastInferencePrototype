@@ -2,3 +2,4 @@
 #include "ROperator_Gemm.hxx"
 #include "ROperator_Relu.hxx"
 #include "ROperator_BatchNormalization.hxx"
+#include "ROperator_InstanceNormalization.hxx"
